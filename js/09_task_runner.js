@@ -8,7 +8,6 @@
   // plus an optional repeat flag. When a matching frame event is received from the viewer the geometry change
   // is applied via setWindowGeometry and one-shot triggers are removed.
   let frameTriggers = [];
-  let latestWindowGeometry = null;
   let geometryFallbackWarned = false;
 
   function geometryTokenValues(){
@@ -18,6 +17,7 @@
       CLw: 0,
       CLh: 0
     };
+    const latestWindowGeometry = window.latestWindowGeometry;
     if (!latestWindowGeometry){
       if (!geometryFallbackWarned){
         log("Tasker: viewer window geometry unavailable; using 0 for CL* tokens.", "warn");
