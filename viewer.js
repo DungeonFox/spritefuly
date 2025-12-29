@@ -36,7 +36,7 @@
   function postWindowGeometry(){
     try{
       if (window.opener && !window.opener.closed){
-        const geom = currentGeom();
+        const geom = { type: "windowGeometry", ...currentGeom() };
         window.opener.postMessage(geom, "*");
       }
     } catch (e){
