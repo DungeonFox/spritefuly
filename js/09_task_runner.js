@@ -8,14 +8,43 @@
   // plus an optional repeat flag. When a matching frame event is received from the viewer the geometry change
   // is applied via setWindowGeometry and one-shot triggers are removed.
   let frameTriggers = [];
+  let latestWindowGeometry = null;
+  let geometryFallbackWarned = false;
 
   function geometryTokenValues(){
-    return {
-      CLl: defaultPopLeft,
-      CLt: defaultPopTop,
-      CLw: defaultPopWidth,
-      CLh: defaultPopHeight
+    const values = {
+      CLl: 0,
+      CLt: 0,
+      CLw: 0,
+      CLh: 0
     };
+    if (!latestWindowGeometry){
+      if (!geometryFallbackWarned){
+        log("Tasker: viewer window geometry unavailable; using 0 for CL* tokens.", "warn");
+        geometryFallbackWarned = true;
+      }
+      return values;
+    }
+    const mappings = {
+      CLl: "left",
+      CLt: "top",
+      CLw: "width",
+      CLh: "height"
+    };
+    let missing = false;
+    for (const [token, field] of Object.entries(mappings)){
+      const v = latestWindowGeometry[field];
+      if (typeof v === "number" && Number.isFinite(v)){
+        values[token] = v;
+      } else {
+        missing = true;
+      }
+    }
+    if (missing && !geometryFallbackWarned){
+      log("Tasker: viewer window geometry incomplete; using 0 for missing CL* tokens.", "warn");
+      geometryFallbackWarned = true;
+    }
+    return values;
   }
 
   function tokenizeGeometryExpression(expr){

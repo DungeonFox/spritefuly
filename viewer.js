@@ -33,6 +33,16 @@
     // screenX/screenY are the most widely supported window position accessors.
     return { left: window.screenX, top: window.screenY, width: window.outerWidth, height: window.outerHeight };
   }
+  function postWindowGeometry(){
+    try{
+      if (window.opener && !window.opener.closed){
+        const geom = currentGeom();
+        window.opener.postMessage({ type: "windowGeometry", ...geom }, "*");
+      }
+    } catch (e){
+      /* ignore errors communicating with opener */
+    }
+  }
   function applyGeom(g){
     try{
       if (typeof g.width === 'number' || typeof g.height === 'number'){
@@ -224,6 +234,7 @@
         try{
           await animateWindowGeometry(c);
         } catch (e){ /* ignore errors */ }
+        postWindowGeometry();
         break;
       default:
         // unknown command
@@ -251,4 +262,5 @@
   } catch (e){
     /* ignore */
   }
+  postWindowGeometry();
 })();
