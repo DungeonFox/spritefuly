@@ -1,0 +1,361 @@
+<!--
+SPRITE HEX-GRAPH FLIPBOOK TOOL WITH TASKER (single-file, no deps)
+================================================================
+
+This is an extended version of the Hex‑Graph Sprite Flipbook Tool. It retains the original template
+and recipe editors, registry system, pop‑out viewer and atlas exporter, and adds a new "Tasker"
+subsystem for automating the pop‑out viewer. Tasks live in a separate manifest (tasks.json) and are
+identified by stable hex IDs (namespace `tsk:`). A task is a list of commands executed sequentially
+with optional delays. Commands are sent to the pop‑out viewer via postMessage and can instruct the
+viewer to pause/play, jump to specific frames, toggle layer visibility, adjust layer opacity, or
+wait for a specified duration. Tasks can be loaded, edited and saved independently from templates
+and recipes.
+
+--------------------------------------------------------------------------------
+FILE FORMATS (revision)
+--------------------------------------------------------------------------------
+
+In addition to the types documented in the original tool, there is now a new
+`Task` node type. A combined registry may hold assets, rects, frames, templates,
+layers, recipes and tasks in one merged manifest. Tasks are declared in
+tasks.json but can be merged into the global registry like any other nodes.
+
+Manifest envelope (unchanged):
+
+```
+{
+  "manifestVersion": 1,
+  "nodes": {
+    ...
+  },
+  "roots": {
+    "template": "tpl:0x...",     // template root id (optional)
+    "recipe":   "anim:0x...",    // recipe root id (optional)
+    "assets":   ["asset:0x..."], // loaded assets
+    "tasks":    ["tsk:0x..."]    // list of task root IDs (optional)
+  }
+}
+```
+
+Task node schema:
+
+```
+ID: tsk:0x...
+{
+  "type": "Task",
+  "name": "Jump & Pause",
+  "commands": [
+    { "cmd": "goToFrameIndex", "index": 0 },
+    { "cmd": "play" },
+    { "cmd": "wait", "duration": 1000 },
+    { "cmd": "pause" },
+    { "cmd": "setLayerVisibility", "layer": "anim:0x...", "visible": false },
+    { "cmd": "setLayerOpacity", "layer": "anim:0x...", "opacity": 0.5 }
+  ]
+}
+```
+
+Commands supported by the built‑in viewer:
+
+* **play**: resumes playback.
+* **pause**: pauses playback.
+* **goToFrameIndex**: jumps to the specified frame index (0‑based). Frames are resolved from the
+  recipe’s frame list.
+* **setLayerVisibility**: toggles a layer’s `visible` flag. The `layer` field must reference a
+  layer ID (anim:0x...).
+* **setLayerOpacity**: sets a layer’s opacity (0..1). The `layer` field must reference a layer ID.
+* **wait**: instructs the Tasker to wait the specified `duration` (in ms) before proceeding to
+  the next command. Note: `wait` does not send anything to the viewer; it merely delays task
+  execution.
+
+* **setWindowGeometry**: resizes and/or moves the pop‑out viewer window. It accepts optional
+  `width`, `height`, `left` and `top` properties (numbers, in pixels). Any omitted property
+  leaves that dimension or position unchanged. For example:
+
+  ```
+  { "cmd": "setWindowGeometry", "width": 640, "height": 480, "left": 200, "top": 100 }
+  ```
+
+  When run as part of a task, this command asks the viewer to resize itself to 640×480 pixels
+  and move to screen coordinates (200,100). If only width/height are provided, the window stays
+  anchored in its current position. If only left/top are provided, the size is preserved.
+
+* **setWindowGeometryOnFrame**: like **setWindowGeometry** but deferred until the viewer
+  reaches a specified frame. In addition to the geometry properties (`left`, `top`, `width`,
+  `height`), it accepts one of `frameIndex` (number), `frameName` (string) or `frameId`
+  (string). When a frame event matching the criteria is emitted by the viewer, the geometry
+  changes are applied via `setWindowGeometry`. By default the trigger fires once; include
+  `"repeat": true` to apply on every matching frame.
+
+================================================================================
+END README
+================================================================================
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hex‑Graph Sprite Flipbook Tool with Tasker</title>
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<header>
+  <div class="title">Hex‑Graph Sprite Flipbook Tool</div>
+  <span class="pill">single‑file • offline • no deps</span>
+  <span id="statusPill" class="pill">registry: 0 nodes</span>
+  <div class="spacer"></div>
+
+  <div class="kbar">
+    <div class="toggle">
+      <input id="deterministicIds" type="checkbox" checked />
+      <label for="deterministicIds" title="Recompute IDs from canonical node content and rewrite references.">Deterministic IDs</label>
+    </div>
+    <button id="btnRehash" class="primary" title="Recompute IDs topologically; rewrite references; clears caches.">Recompute IDs</button>
+    <button id="btnPopout" class="primary">Pop‑out Viewer</button>
+    <button id="btnExportAtlas" class="primary">Export Atlas PNG + JSON</button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- TEMPLATE -->
+  <section class="panel">
+    <h2>
+      <span>Template Editor <span class="mini" id="tplRootMini"></span></span>
+      <span class="kbar">
+        <input id="fileTemplate" type="file" accept=".json,application/json" />
+        <button id="btnSaveTemplate">Save template.json</button>
+      </span>
+    </h2>
+    <div class="content" id="templatePanel">
+      <div class="grid2">
+        <div class="field">
+          <label>tileW / tileH</label>
+          <div class="row">
+            <input id="tplTileW" type="number" min="1" step="1" />
+            <input id="tplTileH" type="number" min="1" step="1" />
+          </div>
+        </div>
+        <div class="field">
+          <label>gridW / gridH (output size = tileW×gridW by tileH×gridH)</label>
+          <div class="row">
+            <input id="tplGridW" type="number" min="1" step="1" />
+            <input id="tplGridH" type="number" min="1" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div class="muted small">Rects (source slices + destination placement)</div>
+          <div class="small muted">IDs are stable refs. Rects are shared across layers.</div>
+        </div>
+        <div class="row">
+          <button id="btnAddRect">+ Rect</button>
+          <button id="btnDelRect" class="danger">Delete Selected</button>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+      <div class="list" id="rectList"></div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div class="muted small">Frame Slots (timeline)</div>
+          <div class="small muted">Recipe overrides are keyed by FrameSlot IDs.</div>
+        </div>
+        <div class="row">
+          <button id="btnAddFrame">+ FrameSlot</button>
+          <button id="btnDelFrame" class="danger">Delete Selected</button>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+      <div class="list" id="frameList"></div>
+    </div>
+  </section>
+
+  <!-- RECIPE -->
+  <section class="panel">
+    <h2>
+      <span>Animation Recipe Builder <span class="mini" id="recRootMini"></span></span>
+      <span class="kbar">
+        <input id="fileRecipe" type="file" accept=".json,application/json" />
+        <button id="btnSaveRecipe">Save animation.json</button>
+      </span>
+    </h2>
+    <div class="content" id="recipePanel">
+      <div class="field">
+        <label>Recipe → Template Root</label>
+        <select id="recipeTemplateSelect"></select>
+        <div class="small muted" style="margin-top:6px">
+          This recipe renders using the selected Template root node.
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div class="muted small">Assets</div>
+          <div class="small muted">Load images (embedded as data URLs for portability).</div>
+        </div>
+        <div class="row">
+          <input id="fileAsset" type="file" accept="image/*" multiple />
+          <button id="btnAddAsset">+ Empty Asset</button>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+      <div class="list" id="assetList"></div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div class="muted small">Layers</div>
+          <div class="small muted">Each layer samples an Asset and draws a Rect, with per-frame overrides.</div>
+        </div>
+        <div class="row">
+          <button id="btnAddLayer">+ Layer</button>
+          <button id="btnDelLayer" class="danger">Delete Selected</button>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+      <div class="list" id="layerList"></div>
+
+      <div class="hr"></div>
+      <div class="field">
+        <label>Selected Layer Overrides (by FrameSlot)</label>
+        <div class="small muted">Override rect and/or dx/dy/opacity for specific FrameSlots.</div>
+        <div style="height:8px"></div>
+        <div class="list" id="overrideList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREVIEW / EXPORT -->
+  <section class="panel">
+    <h2>
+      <span>Preview & IO <span class="mini" id="playMini"></span></span>
+      <span class="kbar">
+        <button id="btnPlay">Play</button>
+        <button id="btnStep">Step</button>
+        <button id="btnReset">Reset</button>
+      </span>
+    </h2>
+    <div class="content rightStack">
+      <div class="field">
+        <label>Composed Frame Preview</label>
+        <canvas id="previewCanvas" width="256" height="256"></canvas>
+        <div class="row" style="justify-content:space-between; margin-top:8px">
+          <div class="small muted">Frame: <span id="frameInfo" class="mono"></span></div>
+          <div class="small muted">Size: <span id="sizeInfo" class="mono"></span></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Registry Manifests (merged view)</label>
+        <textarea id="mergedJson" spellcheck="false"></textarea>
+        <div class="row">
+          <button id="btnCopyMerged">Copy</button>
+          <button id="btnLoadMerged">Load (Merged JSON)</button>
+        </div>
+        <div class="small muted">
+          Useful for debugging graph structure. Loading replaces current registry.
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Log</label>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TASKER -->
+  <section class="panel">
+    <h2>
+      <span>Tasker Manager <span class="mini" id="taskRootMini"></span></span>
+      <span class="kbar">
+        <input id="fileTasker" type="file" accept=".json,application/json" />
+        <button id="btnSaveTasks">Save tasks.json</button>
+        <button id="btnRunTasks" class="primary">Run Tasks</button>
+      </span>
+    </h2>
+    <div class="content" id="taskPanel">
+      <div class="row" style="justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div class="muted small">Tasks</div>
+          <div class="small muted">Define tasks that control the pop‑out viewer.</div>
+        </div>
+        <div class="row">
+          <button id="btnAddTask">+ Task</button>
+          <button id="btnDelTask" class="danger">Delete Selected</button>
+        </div>
+      </div>
+      <div style="height:8px"></div>
+      <div class="list" id="taskList"></div>
+      <div class="hr"></div>
+      <div class="field">
+        <label>Selected Task Editor</label>
+        <div class="small muted">Edit name and commands (as JSON array). Commands are executed sequentially.</div>
+        <div class="row" style="gap:8px; margin-top:6px">
+          <input id="taskNameInput" type="text" placeholder="Task name" style="flex:1" />
+        </div>
+        <div style="height:6px"></div>
+        <textarea id="taskCommandsInput" placeholder='[{"cmd":"play"}]'></textarea>
+        <div class="row" style="margin-top:6px; justify-content:flex-end">
+          <button id="btnUpdateTask">Update Task</button>
+        </div>
+      </div>
+
+      <!-- Pop‑out viewer geometry controls -->
+      <div class="hr"></div>
+      <div class="field">
+        <label>Pop‑out Viewer Geometry</label>
+        <div class="small muted">Configure the default size and screen position of the pop‑out viewer. These values are used when opening a new viewer and can be applied to an open viewer at any time.</div>
+        <div class="row" style="flex-wrap:wrap; gap:8px; margin-top:6px">
+          <label for="viewWidth" style="font-size:11px">W</label>
+          <input id="viewWidth" type="number" min="100" step="10" style="width:70px" />
+          <label for="viewHeight" style="font-size:11px">H</label>
+          <input id="viewHeight" type="number" min="100" step="10" style="width:70px" />
+          <label for="viewLeft" style="font-size:11px">Left</label>
+          <input id="viewLeft" type="number" step="10" style="width:70px" />
+          <label for="viewTop" style="font-size:11px">Top</label>
+          <input id="viewTop" type="number" step="10" style="width:70px" />
+          <button id="btnApplyViewGeometry" class="primary">Apply</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+  <script defer src="js/01_utilities.js"></script>
+  <script defer src="js/02_registry.js"></script>
+  <script defer src="js/03_graph_helpers.js"></script>
+  <script defer src="js/04_reid.js"></script>
+  <script defer src="js/05_renderer.js"></script>
+  <script defer src="js/06_popout.js"></script>
+  <script defer src="js/ui/01_selection_ids.js"></script>
+  <script defer src="js/ui/02_template_recipe.js"></script>
+  <script defer src="js/ui/03_overrides_tasks.js"></script>
+  <script defer src="js/ui/04_refresh_helpers.js"></script>
+  <script defer src="js/07_io.js"></script>
+  <script defer src="js/08_atlas_export.js"></script>
+  <script defer src="js/09_task_runner.js"></script>
+  <script defer src="js/events/00_core.js"></script>
+  <script defer src="js/events/01_template.js"></script>
+  <script defer src="js/events/02_rects.js"></script>
+  <script defer src="js/events/03_frames.js"></script>
+  <script defer src="js/events/04_assets.js"></script>
+  <script defer src="js/events/05_layers.js"></script>
+  <script defer src="js/events/06_tasks.js"></script>
+  <script defer src="js/99_boot.js"></script>
+</body>
+</html>
