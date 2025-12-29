@@ -36,6 +36,16 @@
   function postWindowGeometry(){
     try{
       if (window.opener && !window.opener.closed){
+        const geom = currentGeom();
+        window.opener.postMessage({ type: "windowGeometry", ...geom }, "*");
+      }
+    } catch (e){
+      /* ignore errors communicating with opener */
+    }
+  }
+  function postWindowGeometry(){
+    try{
+      if (window.opener && !window.opener.closed){
         const geom = { type: "windowGeometry", ...currentGeom() };
         window.opener.postMessage(geom, "*");
       }
@@ -64,6 +74,7 @@
     const ease = getEase(cmd.ease);
     if (duration <= 0){
       applyGeom(cmd);
+      postWindowGeometry();
       return;
     }
     const start = currentGeom();
@@ -94,7 +105,10 @@
 
         applyGeom(g);
 
-        if (t >= 1) resolve();
+        if (t >= 1){
+          postWindowGeometry();
+          resolve();
+        }
         else requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
@@ -258,6 +272,7 @@
   try{
     if (window.opener && !window.opener.closed){
       window.opener.postMessage({ type: "viewerReady" }, "*");
+      postWindowGeometry();
     }
   } catch (e){
     /* ignore */

@@ -23,10 +23,10 @@
     renderOnce();
   };
 
-  $("#btnUpdateTask").onclick = () => {
-    if (!selectedTaskId) return;
+  function updateSelectedTaskFromEditor(){
+    if (!selectedTaskId) return true;
     const t = getNode(selectedTaskId);
-    if (!t || t.type !== "Task") return;
+    if (!t || t.type !== "Task") return true;
     const nameVal = $("#taskNameInput").value.trim();
     const cmdsText = $("#taskCommandsInput").value;
     let cmds = [];
@@ -37,7 +37,7 @@
         else throw new Error("Commands must be an array");
       } catch(e){
         log(`Commands JSON parse error: ${e.message}`, "bad");
-        return;
+        return false;
       }
     }
     t.name = nameVal;
@@ -46,10 +46,16 @@
     clearCaches();
     refreshAllUI();
     log(`Updated task: ${t.name || selectedTaskId}`);
+    return true;
+  }
+
+  $("#btnUpdateTask").onclick = () => {
+    updateSelectedTaskFromEditor();
   };
 
   $("#btnRunTasks").onclick = () => {
-    runTasks();
+    const ok = updateSelectedTaskFromEditor();
+    if (ok) runTasks();
   };
 
   $("#btnPlay").onclick = async () => {

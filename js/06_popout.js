@@ -149,8 +149,11 @@
 
   // Send command message to viewer
   function sendCommandToViewer(cmd){
-    if (!popWin || popWin.closed) return;
+    if (!popWin || popWin.closed) return false;
     try{
       popWin.postMessage({type:"command", command: cmd}, "*");
-    } catch {}
+      return true;
+    } catch {
+      return false;
+    }
   }
