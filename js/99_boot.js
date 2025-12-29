@@ -23,10 +23,17 @@
     if (applyBtn){
       applyBtn.onclick = () => {
         const current = geometry ? geometry.getElements() : elements;
-        const wValue = Number(current.width?.value);
-        const hValue = Number(current.height?.value);
-        const xValue = Number(current.left?.value);
-        const yValue = Number(current.top?.value);
+        const readNumeric = (input) => {
+          if (!input) return NaN;
+          const raw = input.value;
+          if (raw === "" || raw === null || raw === undefined) return NaN;
+          const parsed = Number(raw);
+          return Number.isFinite(parsed) ? parsed : NaN;
+        };
+        const wValue = readNumeric(current.width);
+        const hValue = readNumeric(current.height);
+        const xValue = readNumeric(current.left);
+        const yValue = readNumeric(current.top);
         let w = Number.isFinite(wValue) ? Math.max(100, wValue) : defaultPopWidth;
         let h = Number.isFinite(hValue) ? Math.max(100, hValue) : defaultPopHeight;
         defaultPopWidth = w;
