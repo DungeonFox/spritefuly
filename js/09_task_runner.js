@@ -132,7 +132,12 @@
       if (!source.hasOwnProperty(field)) continue;
       const value = source[field];
       if (typeof value === "number"){
-        target[field] = value;
+        if (Number.isFinite(value)){
+          target[field] = value;
+        } else {
+          if (target.hasOwnProperty(field)) delete target[field];
+          log(`Tasker: skipped ${contextLabel} ${field} value (non-finite number).`, "warn");
+        }
         continue;
       }
       if (typeof value === "string"){
@@ -140,11 +145,13 @@
         if (typeof evaluated === "number" && Number.isFinite(evaluated)){
           target[field] = evaluated;
         } else {
+          if (target.hasOwnProperty(field)) delete target[field];
           log(`Tasker: skipped ${contextLabel} ${field} value "${value}" (invalid expression).`, "warn");
         }
         continue;
       }
       if (value !== undefined){
+        if (target.hasOwnProperty(field)) delete target[field];
         log(`Tasker: skipped ${contextLabel} ${field} value (non-number).`, "warn");
       }
     }
