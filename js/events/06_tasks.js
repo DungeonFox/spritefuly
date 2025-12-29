@@ -42,6 +42,11 @@
     }
     t.name = nameVal;
     t.commands = cmds;
+    t.commands.forEach((cmd, index) => {
+      if (cmd && typeof cmd === "object") {
+        log(`Command ${index} types: left=${typeof cmd.left}, top=${typeof cmd.top}`);
+      }
+    });
     setNode(selectedTaskId, t);
     clearCaches();
     refreshAllUI();
