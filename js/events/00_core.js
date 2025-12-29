@@ -1,13 +1,13 @@
   // ---------------------------
   // Event Wiring
   // ---------------------------
-  const latestWindowGeometry = {
+  const currentViewerGeometry = {
     left: null,
     top: null,
     width: null,
     height: null
   };
-  window.latestWindowGeometry = latestWindowGeometry;
+  window.currentViewerGeometry = currentViewerGeometry;
   $("#btnRehash").onclick = () => recomputeIdsTopologically();
   $("#btnPopout").onclick = () => openPopout();
   $("#btnExportAtlas").onclick = () => exportAtlas();
@@ -25,7 +25,7 @@
         return;
       }
       for (const field of fields){
-        latestWindowGeometry[field] = m[field];
+        currentViewerGeometry[field] = m[field];
       }
       return;
     }
