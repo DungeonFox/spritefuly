@@ -16,7 +16,13 @@
   window.addEventListener("message", (ev) => {
     const m = ev.data;
     if (!m || typeof m !== "object") return;
-    if (m.type === "viewerReady"){ pushStateToPopout(true); return; }
+    if (m.type === "viewerReady"){
+      if (typeof window.markPopoutReady === "function"){
+        window.markPopoutReady();
+      }
+      pushStateToPopout(true);
+      return;
+    }
     const fields = ["left", "top", "width", "height"];
     if (m.type === "windowGeometry"){
       const hasGeometryPayload = fields.every((field) => typeof m[field] === "number" && Number.isFinite(m[field]));
