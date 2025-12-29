@@ -17,8 +17,8 @@
       CLw: 0,
       CLh: 0
     };
-    const latestWindowGeometry = window.latestWindowGeometry;
-    if (!latestWindowGeometry){
+    const currentViewerGeometry = window.currentViewerGeometry;
+    if (!currentViewerGeometry){
       if (!geometryFallbackWarned){
         log("Tasker: viewer window geometry unavailable; using 0 for CL* tokens.", "warn");
         geometryFallbackWarned = true;
@@ -33,7 +33,7 @@
     };
     let missing = false;
     for (const [token, field] of Object.entries(mappings)){
-      const v = latestWindowGeometry[field];
+      const v = currentViewerGeometry[field];
       if (typeof v === "number" && Number.isFinite(v)){
         values[token] = v;
       } else {
