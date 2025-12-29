@@ -47,6 +47,13 @@
     return values;
   }
 
+  function normalizeGeometryExpression(expr){
+    return expr
+      .replace(/[\u2212\u2013\u2014]/g, "-")
+      .replace(/[\u00A0\u200B\uFEFF]/g, " ")
+      .trim();
+  }
+
   function tokenizeGeometryExpression(expr){
     const tokens = [];
     const re = /\s*([+\-*/]|CL[ltwh]|\d*\.?\d+)\s*/giy;
@@ -78,7 +85,8 @@
 
   function evaluateGeometryExpression(expr){
     if (typeof expr !== "string") return null;
-    const tokens = tokenizeGeometryExpression(expr);
+    const normalized = normalizeGeometryExpression(expr);
+    const tokens = tokenizeGeometryExpression(normalized);
     if (!tokens) return null;
     const values = geometryTokenValues();
     let idx = 0;
