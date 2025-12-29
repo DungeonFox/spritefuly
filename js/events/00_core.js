@@ -1,6 +1,13 @@
   // ---------------------------
   // Event Wiring
   // ---------------------------
+  const latestWindowGeometry = {
+    left: null,
+    top: null,
+    width: null,
+    height: null
+  };
+  window.latestWindowGeometry = latestWindowGeometry;
   $("#btnRehash").onclick = () => recomputeIdsTopologically();
   $("#btnPopout").onclick = () => openPopout();
   $("#btnExportAtlas").onclick = () => exportAtlas();
@@ -25,7 +32,9 @@
         log("Received invalid viewer window geometry payload.", "warn");
         return;
       }
-      latestWindowGeometry = geom;
+      for (const field of fields){
+        latestWindowGeometry[field] = geom[field];
+      }
       return;
     }
     if (m.type === "frame"){
