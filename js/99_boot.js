@@ -7,15 +7,15 @@
 
   // Initialise geometry controls with current defaults and set up apply handler
   (function initViewerGeometry(){
-    const wInput = document.getElementById("viewWidth");
-    const hInput = document.getElementById("viewHeight");
-    const xInput = document.getElementById("viewLeft");
-    const yInput = document.getElementById("viewTop");
+    const wInput = document.getElementById("popoutWidth");
+    const hInput = document.getElementById("popoutHeight");
+    const xInput = document.getElementById("popoutLeft");
+    const yInput = document.getElementById("popoutTop");
     if (wInput) wInput.value = defaultPopWidth;
     if (hInput) hInput.value = defaultPopHeight;
     if (xInput) xInput.value = defaultPopLeft;
     if (yInput) yInput.value = defaultPopTop;
-    const applyBtn = document.getElementById("btnApplyViewGeometry");
+    const applyBtn = document.getElementById("popoutGeometryApply");
     if (applyBtn){
       applyBtn.onclick = () => {
         const wValue = Number(wInput.value);
