@@ -9,6 +9,118 @@
   // is applied via setWindowGeometry and one-shot triggers are removed.
   let frameTriggers = [];
 
+  function geometryTokenValues(){
+    return {
+      CLl: defaultPopLeft,
+      CLt: defaultPopTop,
+      CLw: defaultPopWidth,
+      CLh: defaultPopHeight
+    };
+  }
+
+  function tokenizeGeometryExpression(expr){
+    const tokens = [];
+    const re = /\s*([+\-*/]|CL[ltwh]|\d*\.?\d+)\s*/gy;
+    let match;
+    while ((match = re.exec(expr)) !== null){
+      const token = match[1];
+      if (token === "+" || token === "-" || token === "*" || token === "/"){
+        tokens.push({ type: "op", value: token });
+      } else if (token.startsWith("CL")){
+        tokens.push({ type: "var", value: token });
+      } else {
+        tokens.push({ type: "number", value: Number(token) });
+      }
+    }
+    if (tokens.length === 0 || re.lastIndex !== expr.length){
+      return null;
+    }
+    return tokens;
+  }
+
+  function evaluateGeometryExpression(expr){
+    if (typeof expr !== "string") return null;
+    const tokens = tokenizeGeometryExpression(expr);
+    if (!tokens) return null;
+    const values = geometryTokenValues();
+    let idx = 0;
+
+    function parseFactor(){
+      const token = tokens[idx];
+      if (!token) return null;
+      if (token.type === "op" && (token.value === "+" || token.value === "-")){
+        idx++;
+        const value = parseFactor();
+        if (value === null) return null;
+        return token.value === "-" ? -value : value;
+      }
+      if (token.type === "number"){
+        idx++;
+        return token.value;
+      }
+      if (token.type === "var"){
+        idx++;
+        const v = values[token.value];
+        return (typeof v === "number") ? v : null;
+      }
+      return null;
+    }
+
+    function parseTerm(){
+      let left = parseFactor();
+      if (left === null) return null;
+      while (idx < tokens.length && tokens[idx].type === "op" && (tokens[idx].value === "*" || tokens[idx].value === "/")){
+        const op = tokens[idx].value;
+        idx++;
+        const right = parseFactor();
+        if (right === null) return null;
+        left = op === "*" ? left * right : left / right;
+      }
+      return left;
+    }
+
+    function parseExpression(){
+      let left = parseTerm();
+      if (left === null) return null;
+      while (idx < tokens.length && tokens[idx].type === "op" && (tokens[idx].value === "+" || tokens[idx].value === "-")){
+        const op = tokens[idx].value;
+        idx++;
+        const right = parseTerm();
+        if (right === null) return null;
+        left = op === "+" ? left + right : left - right;
+      }
+      return left;
+    }
+
+    const result = parseExpression();
+    if (result === null || idx !== tokens.length || Number.isNaN(result)) return null;
+    return result;
+  }
+
+  function normalizeGeometryFields(source, target, contextLabel){
+    const fields = ["left", "top", "width", "height"];
+    for (const field of fields){
+      if (!source.hasOwnProperty(field)) continue;
+      const value = source[field];
+      if (typeof value === "number"){
+        target[field] = value;
+        continue;
+      }
+      if (typeof value === "string"){
+        const evaluated = evaluateGeometryExpression(value);
+        if (typeof evaluated === "number" && Number.isFinite(evaluated)){
+          target[field] = evaluated;
+        } else {
+          log(`Tasker: skipped ${contextLabel} ${field} value "${value}" (invalid expression).`, "warn");
+        }
+        continue;
+      }
+      if (value !== undefined){
+        log(`Tasker: skipped ${contextLabel} ${field} value (non-number).`, "warn");
+      }
+    }
+  }
+
   async function runTasks(){
     if (runningTasks){
       log("Tasker is already running.", "warn");
@@ -42,16 +154,19 @@
           if (cmd.hasOwnProperty('frameIndex')) trig.frameIndex = cmd.frameIndex;
           if (cmd.frameId) trig.frameId = cmd.frameId;
           if (cmd.frameName) trig.frameName = cmd.frameName;
-          if (cmd.hasOwnProperty('left')) trig.left = cmd.left;
-          if (cmd.hasOwnProperty('top')) trig.top = cmd.top;
-          if (cmd.hasOwnProperty('width')) trig.width = cmd.width;
-          if (cmd.hasOwnProperty('height')) trig.height = cmd.height;
+          normalizeGeometryFields(cmd, trig, "trigger");
           if (cmd.hasOwnProperty('duration')) trig.duration = cmd.duration;
           if (cmd.hasOwnProperty('ease')) trig.ease = cmd.ease;
           trig.repeat = !!cmd.repeat;
           frameTriggers.push(trig);
         } else {
-          sendCommandToViewer(cmd);
+          if (cmd.cmd === "setWindowGeometry"){
+            const normalized = { ...cmd };
+            normalizeGeometryFields(cmd, normalized, "command");
+            sendCommandToViewer(normalized);
+          } else {
+            sendCommandToViewer(cmd);
+          }
         }
         // Small yield to allow UI updates
         await new Promise(res => setTimeout(res, 0));
