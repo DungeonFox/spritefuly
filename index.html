@@ -69,11 +69,15 @@ Commands supported by the built‑in viewer:
   execution.
 
 * **setWindowGeometry**: resizes and/or moves the pop‑out viewer window. It accepts optional
-  `width`, `height`, `left` and `top` properties (numbers, in pixels). Any omitted property
-  leaves that dimension or position unchanged. For example:
+  `width`, `height`, `left` and `top` properties (numbers or expression strings, in pixels).
+  Any omitted property leaves that dimension or position unchanged. Supported expression tokens
+  are `CLl`, `CLt`, `CLw`, `CLh` (current viewer `left`, `top`, `width`, `height`). Operators
+  are `+`, `-`, `*`, `/` with normal precedence; unary +/- is allowed. Parentheses are not
+  supported. For example:
 
   ```
   { "cmd": "setWindowGeometry", "width": 640, "height": 480, "left": 200, "top": 100 }
+  { "cmd": "setWindowGeometry", "left": "CLl + 100", "top": "CLt + 300" }
   ```
 
   When run as part of a task, this command asks the viewer to resize itself to 640×480 pixels
@@ -82,7 +86,8 @@ Commands supported by the built‑in viewer:
 
 * **setWindowGeometryOnFrame**: like **setWindowGeometry** but deferred until the viewer
   reaches a specified frame. In addition to the geometry properties (`left`, `top`, `width`,
-  `height`), it accepts one of `frameIndex` (number), `frameName` (string) or `frameId`
+  `height`, each supporting the same expression syntax as **setWindowGeometry**), it accepts
+  one of `frameIndex` (number), `frameName` (string) or `frameId`
   (string). When a frame event matching the criteria is emitted by the viewer, the geometry
   changes are applied via `setWindowGeometry`. By default the trigger fires once; include
   `"repeat": true` to apply on every matching frame.
