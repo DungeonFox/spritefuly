@@ -196,7 +196,10 @@
         } else if (cmd.cmd === 'setDomValue'){
           const id = cmd.id;
           const value = cmd.value;
-          const el = (typeof id === "string") ? document.getElementById(id) : null;
+          let el = (typeof id === "string") ? document.getElementById(id) : null;
+          if (!el && typeof id === "string" && popWin && !popWin.closed){
+            el = popWin.document.getElementById(id);
+          }
           if (!el){
             log(`Tasker: setDomValue element not found (id: ${id}).`, "warn");
           } else {
@@ -206,7 +209,10 @@
           }
         } else if (cmd.cmd === 'clickDom'){
           const id = cmd.id;
-          const el = (typeof id === "string") ? document.getElementById(id) : null;
+          let el = (typeof id === "string") ? document.getElementById(id) : null;
+          if (!el && typeof id === "string" && popWin && !popWin.closed){
+            el = popWin.document.getElementById(id);
+          }
           if (!el){
             log(`Tasker: clickDom element not found (id: ${id}).`, "warn");
           } else if (typeof el.click === "function"){
@@ -227,9 +233,15 @@
           if (cmd.cmd === "setWindowGeometry"){
             const normalized = { ...cmd };
             normalizeGeometryFields(cmd, normalized, "command");
-            sendCommandToViewer(normalized);
+            const sent = sendCommandToViewer(normalized);
+            if (!sent){
+              log("Tasker: viewer window is not open; geometry command skipped.", "warn");
+            }
           } else {
-            sendCommandToViewer(cmd);
+            const sent = sendCommandToViewer(cmd);
+            if (!sent){
+              log("Tasker: viewer window is not open; command skipped.", "warn");
+            }
           }
         }
         // Small yield to allow UI updates
