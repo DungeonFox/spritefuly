@@ -6,10 +6,10 @@
   function openPopout(){
     try{
       // Determine desired geometry from UI inputs or fall back to defaults.
-      const wInput = document.getElementById("viewWidth");
-      const hInput = document.getElementById("viewHeight");
-      const xInput = document.getElementById("viewLeft");
-      const yInput = document.getElementById("viewTop");
+      const wInput = document.getElementById("popoutWidth");
+      const hInput = document.getElementById("popoutHeight");
+      const xInput = document.getElementById("popoutLeft");
+      const yInput = document.getElementById("popoutTop");
 
       let w = wInput && wInput.value ? parseInt(wInput.value) : defaultPopWidth;
       let h = hInput && hInput.value ? parseInt(hInput.value) : defaultPopHeight;
