@@ -184,6 +184,25 @@
         if (cmd.cmd === 'wait'){
           const dur = Math.max(0, cmd.duration || 0);
           await new Promise(res => setTimeout(res, dur));
+        } else if (cmd.cmd === 'setDomValue'){
+          const id = cmd.id;
+          const value = cmd.value;
+          const el = (typeof id === "string") ? document.getElementById(id) : null;
+          if (!el){
+            log(`Tasker: setDomValue element not found (id: ${id}).`, "warn");
+          } else {
+            el.value = value;
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        } else if (cmd.cmd === 'clickDom'){
+          const id = cmd.id;
+          const el = (typeof id === "string") ? document.getElementById(id) : null;
+          if (!el){
+            log(`Tasker: clickDom element not found (id: ${id}).`, "warn");
+          } else if (typeof el.click === "function"){
+            el.click();
+          }
         } else if (cmd.cmd === 'setWindowGeometryOnFrame'){
           // Collect a deferred geometry trigger. Accept matching criteria on frameIndex, frameId or frameName.
           const trig = {};
