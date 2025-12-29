@@ -18,7 +18,7 @@
       CLh: 0
     };
     const currentViewerGeometry = window.currentViewerGeometry;
-    if (!currentViewerGeometry){
+    if (!currentViewerGeometry || typeof currentViewerGeometry !== "object"){
       if (!geometryFallbackWarned){
         log("Tasker: viewer window geometry unavailable; using 0 for CL* tokens.", "warn");
         geometryFallbackWarned = true;
