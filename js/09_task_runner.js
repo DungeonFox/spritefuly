@@ -49,19 +49,28 @@
 
   function tokenizeGeometryExpression(expr){
     const tokens = [];
-    const re = /\s*([+\-*/]|CL[ltwh]|\d*\.?\d+)\s*/gy;
+    const re = /\s*([+\-*/]|CL[ltwh]|\d*\.?\d+)\s*/giy;
     let match;
     while ((match = re.exec(expr)) !== null){
       const token = match[1];
       if (token === "+" || token === "-" || token === "*" || token === "/"){
         tokens.push({ type: "op", value: token });
-      } else if (token.startsWith("CL")){
-        tokens.push({ type: "var", value: token });
+      } else if (token.length === 3 && token.slice(0, 2).toLowerCase() === "cl"){
+        const suffix = token[2].toLowerCase();
+        const normalized = suffix === "l" ? "CLl"
+          : suffix === "t" ? "CLt"
+          : suffix === "w" ? "CLw"
+          : "CLh";
+        tokens.push({ type: "var", value: normalized });
       } else {
         tokens.push({ type: "number", value: Number(token) });
       }
     }
     if (tokens.length === 0 || re.lastIndex !== expr.length){
+      const reason = tokens.length === 0
+        ? "no tokens parsed"
+        : `unexpected token at index ${re.lastIndex}`;
+      log(`Tasker: rejected geometry expression "${expr}" (${reason}).`, "warn");
       return null;
     }
     return tokens;
