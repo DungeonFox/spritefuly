@@ -93,6 +93,13 @@
 
   function evaluateGeometryExpression(expr){
     if (typeof expr !== "string") return null;
+    log(`Tasker: expr raw="${expr}"`, "warn");
+    const rawCodes = Array.from(expr).map(ch => ch.codePointAt(0).toString(16)).join(" ");
+    log(`Tasker: expr codepoints=${rawCodes}`, "warn");
+    const trimmed = expr.trim();
+    log(`Tasker: expr trim="${trimmed}"`, "warn");
+    const trimCodes = Array.from(trimmed).map(ch => ch.codePointAt(0).toString(16)).join(" ");
+    log(`Tasker: expr trim codepoints=${trimCodes}`, "warn");
     const normalized = normalizeGeometryExpression(expr);
     if (typeof normalized !== "string") return null;
     const tokens = tokenizeGeometryExpression(normalized);
