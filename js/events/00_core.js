@@ -18,14 +18,17 @@
     if (!m || typeof m !== "object") return;
     if (m.type === "viewerReady"){ pushStateToPopout(true); return; }
     const fields = ["left", "top", "width", "height"];
-    const hasGeometryPayload = fields.every((field) => typeof m[field] === "number" && Number.isFinite(m[field]));
-    if (m.type === "windowGeometry" || hasGeometryPayload){
+    if (m.type === "windowGeometry"){
+      const hasGeometryPayload = fields.every((field) => typeof m[field] === "number" && Number.isFinite(m[field]));
       if (!hasGeometryPayload){
         log("Received invalid viewer window geometry payload.", "warn");
         return;
       }
+      if (!window.currentViewerGeometry){
+        window.currentViewerGeometry = {};
+      }
       for (const field of fields){
-        currentViewerGeometry[field] = m[field];
+        window.currentViewerGeometry[field] = m[field];
       }
       return;
     }
