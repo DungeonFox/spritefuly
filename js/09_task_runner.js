@@ -166,6 +166,19 @@
     }
   }
 
+  function buildGeometryCommandFromTrigger(trigger){
+    if (!trigger || typeof trigger !== "object") return null;
+    const cmd = { cmd: "setWindowGeometry" };
+    normalizeGeometryFields(trigger, cmd, "trigger");
+    if (typeof trigger.duration === "number" && Number.isFinite(trigger.duration)){
+      cmd.duration = trigger.duration;
+    }
+    if (typeof trigger.ease === "string"){
+      cmd.ease = trigger.ease;
+    }
+    return cmd;
+  }
+
   async function runTasks(){
     if (runningTasks){
       log("Tasker is already running.", "warn");
@@ -224,7 +237,10 @@
           if (cmd.hasOwnProperty('frameIndex')) trig.frameIndex = cmd.frameIndex;
           if (cmd.frameId) trig.frameId = cmd.frameId;
           if (cmd.frameName) trig.frameName = cmd.frameName;
-          normalizeGeometryFields(cmd, trig, "trigger");
+          const fields = ["left", "top", "width", "height"];
+          for (const field of fields){
+            if (cmd.hasOwnProperty(field)) trig[field] = cmd[field];
+          }
           if (cmd.hasOwnProperty('duration')) trig.duration = cmd.duration;
           if (cmd.hasOwnProperty('ease')) trig.ease = cmd.ease;
           trig.repeat = !!cmd.repeat;
@@ -251,3 +267,5 @@
     runningTasks = false;
     log("Tasker finished.");
   }
+
+  window.buildGeometryCommandFromTrigger = buildGeometryCommandFromTrigger;

@@ -2,6 +2,26 @@
   // Pop-out Viewer
   // ---------------------------
   let popWin = null;
+  let popoutReady = false;
+  const pendingViewerCommands = [];
+
+  function markPopoutReady(){
+    popoutReady = true;
+    flushPendingViewerCommands();
+  }
+
+  function flushPendingViewerCommands(){
+    if (!popWin || popWin.closed) return;
+    if (!pendingViewerCommands.length) return;
+    const queue = pendingViewerCommands.splice(0, pendingViewerCommands.length);
+    for (const cmd of queue){
+      try{
+        popWin.postMessage({type:"command", command: cmd}, "*");
+      } catch {
+        /* ignore failed sends */
+      }
+    }
+  }
 
   function getPopoutGeometryElements(root=document){
     return {
@@ -69,6 +89,9 @@
         log("Pop‑out blocked by browser.", "bad");
         return;
       }
+
+      popoutReady = false;
+      pendingViewerCommands.length = 0;
 
       try{
         popWin.mainWindow = window;
@@ -151,9 +174,15 @@
   function sendCommandToViewer(cmd){
     if (!popWin || popWin.closed) return false;
     try{
+      if (!popoutReady){
+        pendingViewerCommands.push(cmd);
+        return true;
+      }
       popWin.postMessage({type:"command", command: cmd}, "*");
       return true;
     } catch {
       return false;
     }
   }
+
+  window.markPopoutReady = markPopoutReady;

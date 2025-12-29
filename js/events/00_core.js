@@ -16,7 +16,13 @@
   window.addEventListener("message", (ev) => {
     const m = ev.data;
     if (!m || typeof m !== "object") return;
-    if (m.type === "viewerReady"){ pushStateToPopout(true); return; }
+    if (m.type === "viewerReady"){
+      if (typeof window.markPopoutReady === "function"){
+        window.markPopoutReady();
+      }
+      pushStateToPopout(true);
+      return;
+    }
     const fields = ["left", "top", "width", "height"];
     if (m.type === "windowGeometry"){
       const hasGeometryPayload = fields.every((field) => typeof m[field] === "number" && Number.isFinite(m[field]));
@@ -44,15 +50,16 @@
         if (trig.hasOwnProperty('frameIndex') && trig.frameIndex !== fIndex) continue;
         if (trig.frameId && trig.frameId !== fId) continue;
         if (trig.frameName && trig.frameName !== fName) continue;
-        // Build the geometry command, only including properties that are numbers.
-        const cmd = { cmd: 'setWindowGeometry' };
-        if (typeof trig.width === 'number') cmd.width = trig.width;
-        if (typeof trig.height === 'number') cmd.height = trig.height;
-        if (typeof trig.left === 'number') cmd.left = trig.left;
-        if (typeof trig.top === 'number') cmd.top = trig.top;
-        if (typeof trig.duration === 'number') cmd.duration = trig.duration;
-        if (typeof trig.ease === 'string') cmd.ease = trig.ease;
-        sendCommandToViewer(cmd);
+        const builder = window.buildGeometryCommandFromTrigger;
+        const cmd = (typeof builder === "function") ? builder(trig) : null;
+        if (cmd){
+          const hasGeometry = ["left", "top", "width", "height"].some((field) => typeof cmd[field] === "number");
+          if (hasGeometry){
+            sendCommandToViewer(cmd);
+          } else {
+            log("Tasker: trigger matched but no valid geometry fields after evaluation.", "warn");
+          }
+        }
         // Remove one-shot triggers; keep repeating triggers
         if (!trig.repeat){
           frameTriggers.splice(i, 1);
