@@ -37,7 +37,7 @@
     try{
       if (window.opener && !window.opener.closed){
         const geom = currentGeom();
-        window.opener.postMessage({ type: "windowGeometry", ...geom }, "*");
+        window.opener.postMessage(geom, "*");
       }
     } catch (e){
       /* ignore errors communicating with opener */

@@ -17,23 +17,15 @@
     const m = ev.data;
     if (!m || typeof m !== "object") return;
     if (m.type === "viewerReady"){ pushStateToPopout(true); return; }
-    if (m.type === "windowGeometry"){
-      const fields = ["left", "top", "width", "height"];
-      const geom = {};
-      let valid = true;
-      for (const field of fields){
-        if (typeof m[field] === "number" && Number.isFinite(m[field])){
-          geom[field] = m[field];
-        } else {
-          valid = false;
-        }
-      }
-      if (!valid){
+    const fields = ["left", "top", "width", "height"];
+    const hasGeometryPayload = fields.every((field) => typeof m[field] === "number" && Number.isFinite(m[field]));
+    if (m.type === "windowGeometry" || hasGeometryPayload){
+      if (!hasGeometryPayload){
         log("Received invalid viewer window geometry payload.", "warn");
         return;
       }
       for (const field of fields){
-        latestWindowGeometry[field] = geom[field];
+        latestWindowGeometry[field] = m[field];
       }
       return;
     }
