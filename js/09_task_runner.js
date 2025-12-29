@@ -47,6 +47,21 @@
     return values;
   }
 
+  function normalizeGeometryExpression(expr){
+    if (typeof expr !== "string") return null;
+    let normalized = expr.replace(/\u00A0/g, " ");
+    normalized = normalized.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, "\"");
+    normalized = normalized.trim();
+    if (normalized.length >= 2){
+      const first = normalized[0];
+      const last = normalized[normalized.length - 1];
+      if ((first === "\"" && last === "\"") || (first === "'" && last === "'")){
+        normalized = normalized.slice(1, -1).trim();
+      }
+    }
+    return normalized;
+  }
+
   function tokenizeGeometryExpression(expr){
     const tokens = [];
     const re = /\s*([+\-*/]|CL[ltwh]|\d*\.?\d+)\s*/giy;
@@ -78,7 +93,9 @@
 
   function evaluateGeometryExpression(expr){
     if (typeof expr !== "string") return null;
-    const tokens = tokenizeGeometryExpression(expr);
+    const normalized = normalizeGeometryExpression(expr);
+    if (typeof normalized !== "string") return null;
+    const tokens = tokenizeGeometryExpression(normalized);
     if (!tokens) return null;
     const values = geometryTokenValues();
     let idx = 0;
