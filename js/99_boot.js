@@ -18,26 +18,40 @@
     const applyBtn = document.getElementById("btnApplyViewGeometry");
     if (applyBtn){
       applyBtn.onclick = () => {
-        let w = parseInt(wInput.value);
-        let h = parseInt(hInput.value);
-        let x = parseInt(xInput.value);
-        let y = parseInt(yInput.value);
-        if (isNaN(w)) w = defaultPopWidth;
-        if (isNaN(h)) h = defaultPopHeight;
-        w = Math.max(100, w);
-        h = Math.max(100, h);
+        const wValue = Number(wInput.value);
+        const hValue = Number(hInput.value);
+        const xValue = Number(xInput.value);
+        const yValue = Number(yInput.value);
+        let w = Number.isFinite(wValue) ? Math.max(100, wValue) : defaultPopWidth;
+        let h = Number.isFinite(hValue) ? Math.max(100, hValue) : defaultPopHeight;
         defaultPopWidth = w;
         defaultPopHeight = h;
-        if (!isNaN(x)) defaultPopLeft = x;
-        if (!isNaN(y)) defaultPopTop = y;
-        // If a viewer window exists, resize and move it
+        if (Number.isFinite(xValue)) defaultPopLeft = xValue;
+        if (Number.isFinite(yValue)) defaultPopTop = yValue;
+        // If a viewer window exists, send geometry updates.
         if (popWin && !popWin.closed){
-          try{
-            popWin.resizeTo(defaultPopWidth, defaultPopHeight);
-            const newX = !isNaN(x) ? x : popWin.screenX;
-            const newY = !isNaN(y) ? y : popWin.screenY;
-            popWin.moveTo(newX, newY);
-          } catch {}
+          const cmd = { cmd: "setWindowGeometry" };
+          let hasField = false;
+          if (Number.isFinite(wValue)){
+            cmd.width = Math.max(100, wValue);
+            hasField = true;
+          }
+          if (Number.isFinite(hValue)){
+            cmd.height = Math.max(100, hValue);
+            hasField = true;
+          }
+          if (Number.isFinite(xValue)){
+            cmd.left = xValue;
+            hasField = true;
+          }
+          if (Number.isFinite(yValue)){
+            cmd.top = yValue;
+            hasField = true;
+          }
+          if (hasField){
+            sendCommandToViewer(cmd);
+            log("Sent pop-out viewer geometry command.");
+          }
         }
       };
     }
