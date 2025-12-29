@@ -3,6 +3,40 @@
   // ---------------------------
   let popWin = null;
 
+  function getPopoutGeometryElements(root=document){
+    return {
+      width: root.getElementById("popoutWidth"),
+      height: root.getElementById("popoutHeight"),
+      left: root.getElementById("popoutLeft"),
+      top: root.getElementById("popoutTop")
+    };
+  }
+
+  function readPopoutGeometryFields(root=document){
+    const {width, height, left, top} = getPopoutGeometryElements(root);
+    return {
+      width: width ? width.value : "",
+      height: height ? height.value : "",
+      left: left ? left.value : "",
+      top: top ? top.value : ""
+    };
+  }
+
+  function updatePopoutGeometryFields(values={}, root=document){
+    const {width, height, left, top} = getPopoutGeometryElements(root);
+    if (width && values.width !== undefined) width.value = values.width;
+    if (height && values.height !== undefined) height.value = values.height;
+    if (left && values.left !== undefined) left.value = values.left;
+    if (top && values.top !== undefined) top.value = values.top;
+    return readPopoutGeometryFields(root);
+  }
+
+  window.popoutGeometry = {
+    getElements: getPopoutGeometryElements,
+    read: readPopoutGeometryFields,
+    update: updatePopoutGeometryFields
+  };
+
   function openPopout(){
     try{
       // Determine desired geometry from UI inputs or fall back to defaults.
@@ -35,6 +69,11 @@
         log("Pop‑out blocked by browser.", "bad");
         return;
       }
+
+      try{
+        popWin.mainWindow = window;
+        popWin.popoutGeometry = window.popoutGeometry;
+      } catch {}
 
       // Update defaults so subsequent opens reuse last values
       defaultPopWidth = w;
