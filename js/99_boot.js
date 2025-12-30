@@ -5,6 +5,15 @@
   refreshAllUI();
   renderOnce();
 
+  (function initCardIdentity(){
+    if (typeof getOrCreateCardId !== "function") return;
+    const cardId = getOrCreateCardId();
+    const title = document.querySelector("[data-role=\"card-title\"]");
+    if (title) title.textContent = `Sprite Editor Deck · ${cardId}`;
+    const cardRoot = document.querySelector(".tcg-card");
+    if (cardRoot) cardRoot.dataset.cardId = cardId;
+  })();
+
   // Initialise geometry controls with current defaults and set up apply handler
   (function initViewerGeometry(){
     const geometry = window.popoutGeometry;
