@@ -134,139 +134,132 @@ END README
         </div>
       </div>
     </div>
-    <div class="card-type">Template Editor</div>
+    <div class="card-type">
+      <!-- TEMPLATE -->
+      <section class="panel">
+        <h2>
+          <span>Template Editor <span class="mini" id="tplRootMini"></span></span>
+          <span class="kbar">
+            <input id="fileTemplate" type="file" accept=".json,application/json" />
+            <button id="btnSaveTemplate">Save template.json</button>
+          </span>
+        </h2>
+        <div class="content" id="templatePanel">
+          <div class="grid2">
+            <div class="field">
+              <label>tileW / tileH</label>
+              <div class="row">
+                <input id="tplTileW" type="number" min="1" step="1" />
+                <input id="tplTileH" type="number" min="1" step="1" />
+              </div>
+            </div>
+            <div class="field">
+              <label>gridW / gridH (output size = tileW×gridW by tileH×gridH)</label>
+              <div class="row">
+                <input id="tplGridW" type="number" min="1" step="1" />
+                <input id="tplGridH" type="number" min="1" step="1" />
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="muted small">Rects (source slices + destination placement)</div>
+              <div class="small muted">IDs are stable refs. Rects are shared across layers.</div>
+            </div>
+            <div class="row">
+              <button id="btnAddRect">+ Rect</button>
+              <button id="btnDelRect" class="danger">Delete Selected</button>
+            </div>
+          </div>
+
+          <div style="height:8px"></div>
+          <div class="list" id="rectList"></div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="muted small">Frame Slots (timeline)</div>
+              <div class="small muted">Recipe overrides are keyed by FrameSlot IDs.</div>
+            </div>
+            <div class="row">
+              <button id="btnAddFrame">+ FrameSlot</button>
+              <button id="btnDelFrame" class="danger">Delete Selected</button>
+            </div>
+          </div>
+
+          <div style="height:8px"></div>
+          <div class="list" id="frameList"></div>
+        </div>
+      </section>
+    </div>
     <div class="card-text">
-      <div class="card-text__body">Animation Recipe Builder</div>
-    </div>
-    <div class="editor-section">
-      <div class="editor-section__header">
-        <span>Editor Section</span>
-        <span class="badge">Active</span>
-      </div>
-      <div class="main">
-  <!-- TEMPLATE -->
-  <section class="panel">
-    <h2>
-      <span>Template Editor <span class="mini" id="tplRootMini"></span></span>
-      <span class="kbar">
-        <input id="fileTemplate" type="file" accept=".json,application/json" />
-        <button id="btnSaveTemplate">Save template.json</button>
-      </span>
-    </h2>
-    <div class="content" id="templatePanel">
-      <div class="grid2">
-        <div class="field">
-          <label>tileW / tileH</label>
-          <div class="row">
-            <input id="tplTileW" type="number" min="1" step="1" />
-            <input id="tplTileH" type="number" min="1" step="1" />
+      <!-- RECIPE -->
+      <section class="panel">
+        <h2>
+          <span>Animation Recipe Builder <span class="mini" id="recRootMini"></span></span>
+          <span class="kbar">
+            <input id="fileRecipe" type="file" accept=".json,application/json" />
+            <button id="btnSaveRecipe">Save animation.json</button>
+          </span>
+        </h2>
+        <div class="content" id="recipePanel">
+          <div class="field">
+            <label>Recipe → Template Root</label>
+            <select id="recipeTemplateSelect"></select>
+            <div class="small muted" style="margin-top:6px">
+              This recipe renders using the selected Template root node.
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="muted small">Assets</div>
+              <div class="small muted">Load images (embedded as data URLs for portability).</div>
+            </div>
+            <div class="row">
+              <input id="fileAsset" type="file" accept="image/*" multiple />
+              <button id="btnAddAsset">+ Empty Asset</button>
+            </div>
+          </div>
+
+          <div style="height:8px"></div>
+          <div class="list" id="assetList"></div>
+
+          <div class="hr"></div>
+
+          <div class="row" style="justify-content:space-between; align-items:flex-end;">
+            <div>
+              <div class="muted small">Layers</div>
+              <div class="small muted">Each layer samples an Asset and draws a Rect, with per-frame overrides.</div>
+            </div>
+            <div class="row">
+              <button id="btnAddLayer">+ Layer</button>
+              <button id="btnDelLayer" class="danger">Delete Selected</button>
+            </div>
+          </div>
+
+          <div style="height:8px"></div>
+          <div class="list" id="layerList"></div>
+
+          <div class="hr"></div>
+          <div class="field">
+            <label>Selected Layer Overrides (by FrameSlot)</label>
+            <div class="small muted">Override rect and/or dx/dy/opacity for specific FrameSlots.</div>
+            <div style="height:8px"></div>
+            <div class="list" id="overrideList"></div>
           </div>
         </div>
-        <div class="field">
-          <label>gridW / gridH (output size = tileW×gridW by tileH×gridH)</label>
-          <div class="row">
-            <input id="tplGridW" type="number" min="1" step="1" />
-            <input id="tplGridH" type="number" min="1" step="1" />
-          </div>
-        </div>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="row" style="justify-content:space-between; align-items:flex-end;">
-        <div>
-          <div class="muted small">Rects (source slices + destination placement)</div>
-          <div class="small muted">IDs are stable refs. Rects are shared across layers.</div>
-        </div>
-        <div class="row">
-          <button id="btnAddRect">+ Rect</button>
-          <button id="btnDelRect" class="danger">Delete Selected</button>
-        </div>
-      </div>
-
-      <div style="height:8px"></div>
-      <div class="list" id="rectList"></div>
-
-      <div class="hr"></div>
-
-      <div class="row" style="justify-content:space-between; align-items:flex-end;">
-        <div>
-          <div class="muted small">Frame Slots (timeline)</div>
-          <div class="small muted">Recipe overrides are keyed by FrameSlot IDs.</div>
-        </div>
-        <div class="row">
-          <button id="btnAddFrame">+ FrameSlot</button>
-          <button id="btnDelFrame" class="danger">Delete Selected</button>
-        </div>
-      </div>
-
-      <div style="height:8px"></div>
-      <div class="list" id="frameList"></div>
+      </section>
     </div>
-  </section>
 
-  <!-- RECIPE -->
-  <section class="panel">
-    <h2>
-      <span>Animation Recipe Builder <span class="mini" id="recRootMini"></span></span>
-      <span class="kbar">
-        <input id="fileRecipe" type="file" accept=".json,application/json" />
-        <button id="btnSaveRecipe">Save animation.json</button>
-      </span>
-    </h2>
-    <div class="content" id="recipePanel">
-      <div class="field">
-        <label>Recipe → Template Root</label>
-        <select id="recipeTemplateSelect"></select>
-        <div class="small muted" style="margin-top:6px">
-          This recipe renders using the selected Template root node.
-        </div>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="row" style="justify-content:space-between; align-items:flex-end;">
-        <div>
-          <div class="muted small">Assets</div>
-          <div class="small muted">Load images (embedded as data URLs for portability).</div>
-        </div>
-        <div class="row">
-          <input id="fileAsset" type="file" accept="image/*" multiple />
-          <button id="btnAddAsset">+ Empty Asset</button>
-        </div>
-      </div>
-
-      <div style="height:8px"></div>
-      <div class="list" id="assetList"></div>
-
-      <div class="hr"></div>
-
-      <div class="row" style="justify-content:space-between; align-items:flex-end;">
-        <div>
-          <div class="muted small">Layers</div>
-          <div class="small muted">Each layer samples an Asset and draws a Rect, with per-frame overrides.</div>
-        </div>
-        <div class="row">
-          <button id="btnAddLayer">+ Layer</button>
-          <button id="btnDelLayer" class="danger">Delete Selected</button>
-        </div>
-      </div>
-
-      <div style="height:8px"></div>
-      <div class="list" id="layerList"></div>
-
-      <div class="hr"></div>
-      <div class="field">
-        <label>Selected Layer Overrides (by FrameSlot)</label>
-        <div class="small muted">Override rect and/or dx/dy/opacity for specific FrameSlots.</div>
-        <div style="height:8px"></div>
-        <div class="list" id="overrideList"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TASKER -->
-  <section class="panel">
+    <!-- TASKER -->
+    <section class="panel">
     <h2>
       <span>Tasker Manager <span class="mini" id="taskRootMini"></span></span>
       <span class="kbar">
@@ -320,9 +313,7 @@ END README
         </div>
       </div>
     </div>
-  </section>
-      </div>
-    </div>
+    </section>
     <div class="card-footer">
       <div class="kbar">
         <div class="toggle">
