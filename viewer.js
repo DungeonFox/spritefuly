@@ -5,6 +5,7 @@
   const ctx = cv.getContext("2d", { willReadFrequently: true });
   const info = document.getElementById("info");
   const btn = document.getElementById("btnToggle");
+  const btnFullscreen = document.getElementById("btnFullscreen");
 
   let playing = true;
   let state = null;
@@ -203,6 +204,15 @@
   requestAnimationFrame(tick);
 
   btn.onclick = () => { playing = !playing; btn.textContent = playing ? "Pause" : "Play"; };
+  if (btnFullscreen){
+    btnFullscreen.onclick = async () => {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen){
+        try { await document.documentElement.requestFullscreen(); } catch {}
+      } else if (document.fullscreenElement && document.exitFullscreen){
+        try { await document.exitFullscreen(); } catch {}
+      }
+    };
+  }
 
   async function handleCommand(cmd){
     if (!cmd || typeof cmd !== "object") return;
