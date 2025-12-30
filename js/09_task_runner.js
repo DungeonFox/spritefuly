@@ -2,11 +2,11 @@
   // Task Runner
   // ---------------------------
   const taskRunnerStates = new Map();
-  const DEFAULT_CARD_KEY = "default";
+  const DEFAULT_TASK_RUNNER_CARD_KEY = "default";
 
   function getTaskRunnerState(cardRoot){
     const root = resolveCardRoot(cardRoot);
-    const cardId = getCardIdFromRoot(root) || DEFAULT_CARD_KEY;
+    const cardId = getCardIdFromRoot(root) || DEFAULT_TASK_RUNNER_CARD_KEY;
     let state = taskRunnerStates.get(cardId);
     if (!state){
       state = {
@@ -22,7 +22,7 @@
   }
 
   function getFrameTriggersForCard(cardId){
-    const key = cardId || DEFAULT_CARD_KEY;
+    const key = cardId || DEFAULT_TASK_RUNNER_CARD_KEY;
     const state = taskRunnerStates.get(key);
     return state ? state.frameTriggers : [];
   }
