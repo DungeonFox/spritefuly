@@ -10,6 +10,60 @@
     margin:0; font-family:var(--sans); background:var(--bg); color:var(--text);
     display:flex; flex-direction:column;
   }
+  .tcg-card{
+    position:relative;
+    flex:1;
+    display:flex;
+    min-height:0;
+    margin:10px;
+    padding:14px;
+    border-radius:26px;
+    border:3px solid #2a3444;
+    background:linear-gradient(145deg, #1a222e, #0f141c 55%, #0b0e13);
+    box-shadow:0 24px 45px rgba(5, 8, 12, 0.65), inset 0 2px 4px rgba(255,255,255,0.06);
+    overflow:hidden;
+  }
+  .tcg-card::before,
+  .tcg-card::after{
+    content:"";
+    position:absolute;
+    pointer-events:none;
+    border-radius:inherit;
+  }
+  .tcg-card::before{
+    inset:6px;
+    border:2px solid rgba(237, 202, 126, 0.65);
+    box-shadow:0 0 10px rgba(237, 202, 126, 0.15), inset 0 0 12px rgba(255,255,255,0.08);
+  }
+  .tcg-card::after{
+    inset:12px;
+    border:1px solid rgba(124, 138, 160, 0.5);
+  }
+  .tcg-card__frame{
+    position:relative;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    padding:12px;
+    border-radius:18px;
+    border:1px solid #1c2431;
+    background:linear-gradient(180deg, rgba(26,34,46,0.95), rgba(17,22,30,0.95));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .tcg-card__band{
+    align-self:flex-start;
+    margin-bottom:8px;
+    padding:6px 14px;
+    border-radius:999px;
+    border:1px solid rgba(237, 202, 126, 0.6);
+    background:linear-gradient(135deg, rgba(237, 202, 126, 0.25), rgba(93, 214, 193, 0.15));
+    color:#f2dfb3;
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    box-shadow:0 0 12px rgba(237, 202, 126, 0.18);
+  }
   header{
     padding:10px 12px; border-bottom:1px solid var(--line);
     display:flex; gap:12px; align-items:center; flex-wrap:wrap;
