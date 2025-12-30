@@ -49,6 +49,15 @@
       if (name === "image" && h){
         card.style.setProperty("--image-h", `${h * scaleY}px`);
       }
+      if (name === "header" && h){
+        card.style.setProperty("--header-h", `${h * scaleY}px`);
+      }
+      if (name === "panels" && h){
+        card.style.setProperty("--panels-h", `${h * scaleY}px`);
+      }
+      if (name === "footer" && h){
+        card.style.setProperty("--footer-h", `${h * scaleY}px`);
+      }
     });
     const baseScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
     card.style.setProperty("--card-padding", `${18 * baseScale}px`);
