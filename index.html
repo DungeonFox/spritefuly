@@ -125,11 +125,17 @@ END README
       <div class="card-header__badge">Legendary</div>
     </div>
     <div class="card-image">
-      <div class="card-image__frame"></div>
+      <div class="card-image__frame">
+        <canvas id="previewCanvas" width="256" height="256"></canvas>
+        <div class="row card-image__meta" style="justify-content:space-between;">
+          <div class="small muted">Frame: <span id="frameInfo" class="mono"></span></div>
+          <div class="small muted">Size: <span id="sizeInfo" class="mono"></span></div>
+        </div>
+      </div>
     </div>
-    <div class="card-type">Sprite Editor</div>
+    <div class="card-type">Template Editor</div>
     <div class="card-text">
-      <div class="card-text__body">Design templates, build animation recipes, preview frames, and automate playback with Tasker.</div>
+      <div class="card-text__body">Animation Recipe Builder</div>
     </div>
     <div class="editor-section">
       <div class="editor-section__header">
@@ -269,15 +275,6 @@ END README
       </span>
     </h2>
     <div class="content rightStack">
-      <div class="field">
-        <label>Composed Frame Preview</label>
-        <canvas id="previewCanvas" width="256" height="256"></canvas>
-        <div class="row" style="justify-content:space-between; margin-top:8px">
-          <div class="small muted">Frame: <span id="frameInfo" class="mono"></span></div>
-          <div class="small muted">Size: <span id="sizeInfo" class="mono"></span></div>
-        </div>
-      </div>
-
       <div class="field">
         <label>Registry Manifests (merged view)</label>
         <textarea id="mergedJson" spellcheck="false"></textarea>
