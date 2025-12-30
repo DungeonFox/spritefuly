@@ -79,6 +79,8 @@
       feat.push(`height=${h}`);
       if (!isNaN(x)) feat.push(`left=${x}`);
       if (!isNaN(y)) feat.push(`top=${y}`);
+      // Browsers may ignore chrome suppression unless running in app mode/PWA.
+      feat.push("toolbar=no", "location=no", "menubar=no", "status=no", "noopener", "noreferrer");
       const features = feat.join(",");
 
       // Open viewer.html in a separate window. (Relative to index.html.)
