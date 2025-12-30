@@ -106,16 +106,6 @@ END README
   <span class="pill">single‑file • offline • no deps</span>
   <span id="statusPill" class="pill">registry: 0 nodes</span>
   <div class="spacer"></div>
-
-  <div class="kbar">
-    <div class="toggle">
-      <input id="deterministicIds" type="checkbox" checked />
-      <label for="deterministicIds" title="Recompute IDs from canonical node content and rewrite references.">Deterministic IDs</label>
-    </div>
-    <button id="btnRehash" class="primary" title="Recompute IDs topologically; rewrite references; clears caches.">Recompute IDs</button>
-    <button id="btnPopout" class="primary">Pop‑out Viewer</button>
-    <button id="btnExportAtlas" class="primary">Export Atlas PNG + JSON</button>
-  </div>
 </header>
 
 <div class="card-container">
@@ -333,7 +323,17 @@ END README
   </section>
       </div>
     </div>
-    <div class="card-footer">Hex‑Graph Utility Suite • Arcane Edition</div>
+    <div class="card-footer">
+      <div class="kbar">
+        <div class="toggle">
+          <input id="deterministicIds" type="checkbox" checked />
+          <label for="deterministicIds" title="Recompute IDs from canonical node content and rewrite references.">Deterministic IDs</label>
+        </div>
+        <button id="btnRehash" class="primary" title="Recompute IDs topologically; rewrite references; clears caches.">Recompute IDs</button>
+        <button id="btnPopout" class="primary">Pop‑out Viewer</button>
+        <button id="btnExportAtlas" class="primary">Export Atlas PNG + JSON</button>
+      </div>
+    </div>
   </div>
   <aside class="card-adjacent" aria-label="Supplemental preview panels">
     <section class="panel side-panel" data-panel="registry">
