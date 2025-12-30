@@ -104,6 +104,11 @@
       const feat = [];
       feat.push(`width=${w}`);
       feat.push(`height=${h}`);
+      feat.push("popup=yes");
+      feat.push("toolbar=no");
+      feat.push("location=no");
+      feat.push("menubar=no");
+      feat.push("status=no");
       if (!isNaN(x)) feat.push(`left=${x}`);
       if (!isNaN(y)) feat.push(`top=${y}`);
       const features = feat.join(",");
