@@ -222,15 +222,17 @@
     letter-spacing:0.4px;
   }
   .card-footer{
+    display:flex;
+    justify-content:center;
+    align-items:center;
     padding:8px 12px;
-    text-align:center;
-    font-size:11px;
-    letter-spacing:1.2px;
-    text-transform:uppercase;
-    color:#d2b675;
     border-top:1px solid rgba(212, 173, 82, 0.35);
     border-radius:12px;
     background:rgba(12, 14, 18, 0.75);
+  }
+  .card-footer .kbar{
+    width:100%;
+    justify-content:center;
   }
   .panel{
     background:var(--panel); border:1px solid var(--line); border-radius:12px;
