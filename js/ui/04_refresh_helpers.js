@@ -1,10 +1,11 @@
-  function refreshAllUI(){
-    updateStatus();
-    refreshTemplateUI();
-    refreshRecipeUI();
-    refreshTaskerUI();
-    wireDynamicInputs(); // re-bind dynamic inputs
-    pushStateToPopout(false);
+  function refreshAllUI(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    updateStatus(root);
+    refreshTemplateUI(root);
+    refreshRecipeUI(root);
+    refreshTaskerUI(root);
+    wireDynamicInputs(root); // re-bind dynamic inputs
+    pushStateToPopout(false, root);
   }
 
   function escapeHtml(s){
@@ -26,9 +27,11 @@
     return `<select data-k="${key}" data-id="${escapeHtml(id)}">${opts}</select>`;
   }
 
-  function wireDynamicInputs(){
+  function wireDynamicInputs(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return;
     // Node field changes: data-k + data-id
-    document.querySelectorAll("[data-k][data-id]").forEach(el => {
+    $$in(root, "[data-k][data-id]").forEach(el => {
       el.onchange = () => {
         const key = el.getAttribute("data-k");
         const id = el.getAttribute("data-id");
@@ -49,31 +52,31 @@
         }
         setNode(id, node);
         clearCaches();
-        refreshAllUI();
-        renderOnce();
+        refreshAllUI(root);
+        renderOnce(root);
       };
     });
 
     // Override edit inputs
-    document.querySelectorAll("[data-ov][data-l][data-f]").forEach(el => {
+    $$in(root, "[data-ov][data-l][data-f]").forEach(el => {
       el.onchange = () => {
         // doesn't apply until "Set" clicked
       };
     });
 
     // Override actions
-    document.querySelectorAll("[data-ov-set]").forEach(btn => {
+    $$in(root, "[data-ov-set]").forEach(btn => {
       btn.onclick = () => {
         const fid = btn.getAttribute("data-ov-set");
         const layer = getNode(selectedLayerId);
         if (!layer || layer.type !== "Layer") return;
 
         const getVal = (k) => {
-          const el = document.querySelector(`[data-ov="${k}"][data-l="${selectedLayerId}"][data-f="${fid}"]`);
+          const el = $in(root, `[data-ov="${k}"][data-l="${selectedLayerId}"][data-f="${fid}"]`);
           return el ? el.value : "";
         };
 
-        const rectSel = document.querySelector(`select[data-id="ov:${selectedLayerId}:${fid}"][data-k="rect"]`);
+        const rectSel = $in(root, `select[data-id="ov:${selectedLayerId}:${fid}"][data-k="rect"]`);
         const rect = rectSel ? rectSel.value : "";
 
         layer.overrides = (layer.overrides && typeof layer.overrides === "object") ? layer.overrides : {};
@@ -92,12 +95,12 @@
 
         setNode(selectedLayerId, layer);
         clearCaches();
-        refreshAllUI();
-        renderOnce();
+        refreshAllUI(root);
+        renderOnce(root);
       };
     });
 
-    document.querySelectorAll("[data-ov-clear]").forEach(btn => {
+    $$in(root, "[data-ov-clear]").forEach(btn => {
       btn.onclick = () => {
         const fid = btn.getAttribute("data-ov-clear");
         const layer = getNode(selectedLayerId);
@@ -106,16 +109,16 @@
         delete layer.overrides[fid];
         setNode(selectedLayerId, layer);
         clearCaches();
-        refreshAllUI();
-        renderOnce();
+        refreshAllUI(root);
+        renderOnce(root);
       };
     });
 
     // Asset selection button
-    document.querySelectorAll("[data-pick-asset]").forEach(btn => {
+    $$in(root, "[data-pick-asset]").forEach(btn => {
       btn.onclick = () => {
         selectedAssetId = btn.getAttribute("data-pick-asset");
-        refreshAllUI();
+        refreshAllUI(root);
       };
     });
   }

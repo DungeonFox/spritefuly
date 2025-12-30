@@ -1,10 +1,12 @@
   // ---------------------------
   // Deterministic Re-ID (topological)
   // ---------------------------
-  function recomputeIdsTopologically(){
-    const enabled = $("#deterministicIds").checked;
+  function recomputeIdsTopologically(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    const deterministic = root ? $role(root, "deterministic-ids") : null;
+    const enabled = deterministic ? deterministic.checked : false;
     if (!enabled){
-      log("Deterministic IDs is off; recompute skipped.", "warn");
+      log("Deterministic IDs is off; recompute skipped.", "warn", root);
       return;
     }
 
@@ -160,8 +162,8 @@
     registry.roots.tasks = (registry.roots.tasks || []).map(t => oldToNew.get(t) || t);
 
     clearCaches();
-    updateStatus();
-    log(`Recomputed IDs. Rewritten: ${oldToNew.size} nodes.`);
-    refreshAllUI();
-    renderOnce();
+    updateStatus(root);
+    log(`Recomputed IDs. Rewritten: ${oldToNew.size} nodes.`, "info", root);
+    refreshAllUI(root);
+    renderOnce(root);
   }

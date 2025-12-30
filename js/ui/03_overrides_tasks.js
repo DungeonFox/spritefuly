@@ -1,5 +1,8 @@
-  function refreshOverridesUI(){
-    const box = $("#overrideList");
+  function refreshOverridesUI(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return;
+    const box = $role(root, "override-list");
+    if (!box) return;
     box.innerHTML = "";
     const rec = registry.roots.recipe ? getNode(registry.roots.recipe) : null;
     if (!rec || rec.type !== "Recipe") return;
@@ -52,8 +55,11 @@
     }
   }
 
-  function refreshTaskerUI(){
-    const taskList = $("#taskList");
+  function refreshTaskerUI(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return;
+    const taskList = $role(root, "task-list");
+    if (!taskList) return;
     taskList.innerHTML = "";
     const head = document.createElement("div");
     head.className = "head";
@@ -76,17 +82,19 @@
       `;
       item.onclick = () => {
         selectedTaskId = tid;
-        refreshAllUI();
+        refreshAllUI(root);
       };
       taskList.appendChild(item);
     }
     // Populate selected task editor fields
     const tsel = selectedTaskId ? getNode(selectedTaskId) : null;
+    const taskNameInput = $role(root, "task-name-input");
+    const taskCommandsInput = $role(root, "task-commands-input");
     if (tsel && tsel.type === "Task"){
-      $("#taskNameInput").value = tsel.name || "";
-      $("#taskCommandsInput").value = JSON.stringify(tsel.commands || [], null, 2);
+      if (taskNameInput) taskNameInput.value = tsel.name || "";
+      if (taskCommandsInput) taskCommandsInput.value = JSON.stringify(tsel.commands || [], null, 2);
     } else {
-      $("#taskNameInput").value = "";
-      $("#taskCommandsInput").value = "";
+      if (taskNameInput) taskNameInput.value = "";
+      if (taskCommandsInput) taskCommandsInput.value = "";
     }
   }

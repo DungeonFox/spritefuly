@@ -2,8 +2,43 @@
   // Utilities
   // ---------------------------
   const $ = (sel) => document.querySelector(sel);
-  const logEl = $("#log");
+  const $in = (root, sel) => root ? root.querySelector(sel) : null;
+  const $$in = (root, sel) => root ? Array.from(root.querySelectorAll(sel)) : [];
+  const $role = (root, role) => $in(root, `[data-role="${role}"]`);
   const statusPill = $("#statusPill");
+
+  function toDataRole(id){
+    if (!id || typeof id !== "string") return "";
+    return id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/_/g, "-").toLowerCase();
+  }
+
+  function escapeCardSelector(value){
+    if (window.CSS && typeof window.CSS.escape === "function"){
+      return window.CSS.escape(value);
+    }
+    return String(value).replace(/"/g, '\\"');
+  }
+
+  function getCardRoot(cardId){
+    if (!cardId){
+      return document.querySelector(".card-shell");
+    }
+    const selector = `.card-shell[data-card-id="${escapeCardSelector(cardId)}"]`;
+    return document.querySelector(selector);
+  }
+
+  function getCardRootByElement(el){
+    if (!el || typeof el.closest !== "function") return null;
+    return el.closest(".card-shell");
+  }
+
+  function resolveCardRoot(cardRoot){
+    return cardRoot || getCardRootByElement(document.activeElement) || getCardRoot();
+  }
+
+  function getCardIdFromRoot(cardRoot){
+    return cardRoot?.dataset?.cardId || "";
+  }
 
   // Default geometry for the pop‑out viewer. These values are used when opening a new
   // viewer and can be modified via the geometry controls. They persist across
@@ -13,7 +48,10 @@
   let defaultPopLeft = 100;
   let defaultPopTop = 100;
 
-  function log(msg, kind="info"){
+  function log(msg, kind="info", cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    const logEl = root ? $role(root, "log") : null;
+    if (!logEl) return;
     const t = new Date().toISOString().slice(11,19);
     const tag = kind === "bad" ? "[!]" : kind === "warn" ? "[~]" : "[i]";
     logEl.textContent = `${t} ${tag} ${msg}\n` + logEl.textContent;

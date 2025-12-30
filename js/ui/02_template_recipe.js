@@ -1,15 +1,22 @@
-  function refreshTemplateUI(){
+  function refreshTemplateUI(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return;
     const tplId = registry.roots.template;
     const tpl = tplId ? getNode(tplId) : null;
     if (!tpl || tpl.type !== "Template") return;
 
-    $("#tplTileW").value = +tpl.tileW || 32;
-    $("#tplTileH").value = +tpl.tileH || 32;
-    $("#tplGridW").value = +tpl.gridW || 4;
-    $("#tplGridH").value = +tpl.gridH || 4;
+    const tileW = $role(root, "tpl-tile-w");
+    const tileH = $role(root, "tpl-tile-h");
+    const gridW = $role(root, "tpl-grid-w");
+    const gridH = $role(root, "tpl-grid-h");
+    if (tileW) tileW.value = +tpl.tileW || 32;
+    if (tileH) tileH.value = +tpl.tileH || 32;
+    if (gridW) gridW.value = +tpl.gridW || 4;
+    if (gridH) gridH.value = +tpl.gridH || 4;
 
     // Rect list
-    const rectList = $("#rectList");
+    const rectList = $role(root, "rect-list");
+    if (!rectList) return;
     rectList.innerHTML = "";
     const head = document.createElement("div");
     head.className = "head";
@@ -42,13 +49,14 @@
       item.onclick = (ev) => {
         if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "SELECT")) return;
         selectedRectId = rid;
-        refreshAllUI();
+        refreshAllUI(root);
       };
       rectList.appendChild(item);
     }
 
     // Frame list
-    const frameList = $("#frameList");
+    const frameList = $role(root, "frame-list");
+    if (!frameList) return;
     frameList.innerHTML = "";
     const head2 = document.createElement("div");
     head2.className = "head";
@@ -73,15 +81,18 @@
       item.onclick = (ev) => {
         if (ev.target && ev.target.tagName === "INPUT") return;
         selectedFrameId = fid;
-        refreshAllUI();
+        refreshAllUI(root);
       };
       frameList.appendChild(item);
     }
   }
 
-  function refreshRecipeUI(){
+  function refreshRecipeUI(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return;
     // Template selector
-    const tplSel = $("#recipeTemplateSelect");
+    const tplSel = $role(root, "recipe-template-select");
+    if (!tplSel) return;
     tplSel.innerHTML = "";
     const templates = listNodesOfType("Template").map(x => x.id).sort();
     for (const id of templates){
@@ -99,7 +110,8 @@
     if (rec.template && templates.includes(rec.template)) tplSel.value = rec.template;
 
     // Asset list
-    const assetList = $("#assetList");
+    const assetList = $role(root, "asset-list");
+    if (!assetList) return;
     assetList.innerHTML = "";
     const head = document.createElement("div");
     head.className = "head";
@@ -125,13 +137,14 @@
       item.onclick = (ev) => {
         if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "BUTTON")) return;
         selectedAssetId = aid;
-        refreshAllUI();
+        refreshAllUI(root);
       };
       assetList.appendChild(item);
     }
 
     // Layer list
-    const layerList = $("#layerList");
+    const layerList = $role(root, "layer-list");
+    if (!layerList) return;
     layerList.innerHTML = "";
     const head2 = document.createElement("div");
     head2.className = "head";
@@ -168,10 +181,10 @@
       item.onclick = (ev) => {
         if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "SELECT")) return;
         selectedLayerId = lid;
-        refreshAllUI();
+        refreshAllUI(root);
       };
       layerList.appendChild(item);
     }
 
-    refreshOverridesUI();
+    refreshOverridesUI(root);
   }

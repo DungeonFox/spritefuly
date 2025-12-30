@@ -1,4 +1,6 @@
 (() => {
+  const params = new URLSearchParams(window.location.search);
+  const viewerCardId = params.get("cardId") || "default";
   const cv = document.getElementById("cv");
   const ctx = cv.getContext("2d", { willReadFrequently: true });
   const info = document.getElementById("info");
@@ -37,7 +39,7 @@
     try{
       if (window.opener && !window.opener.closed){
         const geom = currentGeom();
-        window.opener.postMessage({ type: "windowGeometry", ...geom }, "*");
+        window.opener.postMessage({ type: "windowGeometry", ...geom, cardId: viewerCardId }, "*");
       }
     } catch (e){
       /* ignore errors communicating with opener */
@@ -46,7 +48,7 @@
   function postWindowGeometry(){
     try{
       if (window.opener && !window.opener.closed){
-        const geom = { type: "windowGeometry", ...currentGeom() };
+        const geom = { type: "windowGeometry", ...currentGeom(), cardId: viewerCardId };
         window.opener.postMessage(geom, "*");
       }
     } catch (e){
@@ -184,7 +186,7 @@
           if (window.opener && !window.opener.closed && state && Array.isArray(state.frames)){
             const frame = state.frames[cur];
             if (frame){
-              const payload = { type: 'frame', frameIndex: cur, frameId: frame.id, frameName: frame.name || '' };
+              const payload = { type: 'frame', frameIndex: cur, frameId: frame.id, frameName: frame.name || '', cardId: viewerCardId };
               window.opener.postMessage(payload, '*');
             }
           }
@@ -220,10 +222,10 @@
             if (window.opener && !window.opener.closed && state && Array.isArray(state.frames)){
               const frame = state.frames[cur];
               if (frame){
-                const payload = { type: 'frame', frameIndex: cur, frameId: frame.id, frameName: frame.name || '' };
-                window.opener.postMessage(payload, '*');
-              }
+              const payload = { type: 'frame', frameIndex: cur, frameId: frame.id, frameName: frame.name || '', cardId: viewerCardId };
+              window.opener.postMessage(payload, '*');
             }
+          }
           } catch (e) {
             /* ignore errors */
           }
@@ -259,6 +261,8 @@
   window.addEventListener("message", async (ev) => {
     const m = ev.data;
     if (!m || typeof m !== "object") return;
+    if (m.cardId && m.cardId !== viewerCardId) return;
+    if (!m.cardId && viewerCardId !== "default") return;
     if (m.type === "state"){
       state = m.state;
       if (m.reset){ cur = 0; nextAt = performance.now(); }
@@ -271,7 +275,7 @@
   // Tell the opener we’re alive so it can push the initial state immediately.
   try{
     if (window.opener && !window.opener.closed){
-      window.opener.postMessage({ type: "viewerReady" }, "*");
+      window.opener.postMessage({ type: "viewerReady", cardId: viewerCardId }, "*");
       postWindowGeometry();
     }
   } catch (e){
