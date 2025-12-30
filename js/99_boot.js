@@ -3,6 +3,71 @@
   // ---------------------------
   ensureDefaults();
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
+  const cardLayoutObservers = new WeakMap();
+
+  function getViewBoxDimensions(svg){
+    if (svg && svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width){
+      return svg.viewBox.baseVal;
+    }
+    const raw = svg ? svg.getAttribute("viewBox") : "";
+    const parts = raw ? raw.split(/[,\s]+/).map(Number) : [];
+    if (parts.length >= 4 && parts.every((value) => Number.isFinite(value))){
+      return {x: parts[0], y: parts[1], width: parts[2], height: parts[3]};
+    }
+    return null;
+  }
+
+  function updateCardLayout(card){
+    if (!card) return;
+    const svg = card.querySelector(".card-layout");
+    if (!svg) return;
+    const viewBox = getViewBoxDimensions(svg);
+    if (!viewBox || !viewBox.width || !viewBox.height) return;
+    const rect = card.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const scaleX = rect.width / viewBox.width;
+    const scaleY = rect.height / viewBox.height;
+    const scale = Math.min(scaleX, scaleY);
+    card.style.setProperty("--card-scale", scale);
+    card.style.setProperty("--card-scale-x", scaleX);
+    card.style.setProperty("--card-scale-y", scaleY);
+    const regions = svg.querySelectorAll("[data-region]");
+    regions.forEach((region) => {
+      const name = region.dataset.region;
+      if (!name) return;
+      const x = Number(region.getAttribute("x")) || 0;
+      const y = Number(region.getAttribute("y")) || 0;
+      const w = Number(region.getAttribute("width")) || 0;
+      const h = Number(region.getAttribute("height")) || 0;
+      card.style.setProperty(`--${name}-x`, `${x * scaleX}px`);
+      card.style.setProperty(`--${name}-y`, `${y * scaleY}px`);
+      card.style.setProperty(`--${name}-w`, `${w * scaleX}px`);
+      card.style.setProperty(`--${name}-h`, `${h * scaleY}px`);
+      if (name === "section-gap" && h){
+        card.style.setProperty("--section-gap", `${h * scaleY}px`);
+      }
+      if (name === "image" && h){
+        card.style.setProperty("--image-h", `${h * scaleY}px`);
+      }
+    });
+    const baseScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
+    card.style.setProperty("--card-padding", `${18 * baseScale}px`);
+    card.style.setProperty("--header-pad-x", `${14 * baseScale}px`);
+    card.style.setProperty("--header-pad-y", `${10 * baseScale}px`);
+    card.style.setProperty("--image-pad", `${10 * baseScale}px`);
+    card.style.setProperty("--image-gap", `${6 * baseScale}px`);
+  }
+
+  function initCardLayout(root){
+    const card = root.querySelector(".tcg-card");
+    if (!card) return;
+    updateCardLayout(card);
+    if (!cardLayoutObservers.has(card)){
+      const observer = new ResizeObserver(() => updateCardLayout(card));
+      observer.observe(card);
+      cardLayoutObservers.set(card, observer);
+    }
+  }
 
   (function initCardIdentity(){
     const fallbackId = (typeof getOrCreateCardId === "function") ? getOrCreateCardId() : "";
@@ -22,6 +87,8 @@
       if (title) title.textContent = `Sprite Editor Deck · ${cardId}`;
     });
   })();
+
+  cardRoots.forEach((root) => initCardLayout(root));
 
   cardRoots.forEach((root) => {
     refreshAllUI(root);
