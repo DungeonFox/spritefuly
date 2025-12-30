@@ -1,10 +1,11 @@
   // ---------------------------
   // Atlas Export (Aseprite-style JSON + PNG)
   // ---------------------------
-  async function exportAtlas(){
+  async function exportAtlas(cardRoot){
+    const root = resolveCardRoot(cardRoot);
     const plan = registry.roots.recipe ? buildRenderPlan(registry.roots.recipe) : null;
     if (!plan || plan.frames.length === 0){
-      log("Nothing to export (missing recipe/frames).", "bad");
+      log("Nothing to export (missing recipe/frames).", "bad", root);
       return;
     }
     const outW = plan.outSize.w, outH = plan.outSize.h;
@@ -69,11 +70,11 @@
     // Export
     atlas.toBlob((blob) => {
       if (!blob){
-        log("PNG export failed.", "bad");
+        log("PNG export failed.", "bad", root);
         return;
       }
       downloadBlob("atlas.png", blob);
       downloadText("atlas.json", JSON.stringify(jsonOut, null, 2));
-      log(`Exported atlas.png (${atlasW}x${atlasH}) and atlas.json (${plan.frames.length} frames).`);
+      log(`Exported atlas.png (${atlasW}x${atlasH}) and atlas.json (${plan.frames.length} frames).`, "info", root);
     }, "image/png");
   }

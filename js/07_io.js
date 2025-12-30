@@ -5,47 +5,51 @@
     return await file.text();
   }
 
-  async function handleLoadTemplateFile(file){
+  async function handleLoadTemplateFile(file, cardRoot){
+    const root = resolveCardRoot(cardRoot);
     const txt = await readFileText(file);
     const j = safeJsonParse(txt);
-    if (j.__error){ log(`template.json parse error: ${j.__error}`, "bad"); return; }
+    if (j.__error){ log(`template.json parse error: ${j.__error}`, "bad", root); return; }
     mergeManifest(j);
     if (j.roots?.template) registry.roots.template = j.roots.template;
     clearCaches();
-    refreshAllUI();
-    renderOnce();
-    log(`Loaded template manifest: ${file.name}`);
+    refreshAllUI(root);
+    renderOnce(root);
+    log(`Loaded template manifest: ${file.name}`, "info", root);
   }
 
-  async function handleLoadRecipeFile(file){
+  async function handleLoadRecipeFile(file, cardRoot){
+    const root = resolveCardRoot(cardRoot);
     const txt = await readFileText(file);
     const j = safeJsonParse(txt);
-    if (j.__error){ log(`animation.json parse error: ${j.__error}`, "bad"); return; }
+    if (j.__error){ log(`animation.json parse error: ${j.__error}`, "bad", root); return; }
     mergeManifest(j);
     if (j.roots?.recipe) registry.roots.recipe = j.roots.recipe;
     clearCaches();
-    refreshAllUI();
-    renderOnce();
-    log(`Loaded recipe manifest: ${file.name}`);
+    refreshAllUI(root);
+    renderOnce(root);
+    log(`Loaded recipe manifest: ${file.name}`, "info", root);
   }
 
-  async function handleLoadTaskerFile(file){
+  async function handleLoadTaskerFile(file, cardRoot){
+    const root = resolveCardRoot(cardRoot);
     const txt = await readFileText(file);
     const j = safeJsonParse(txt);
-    if (j.__error){ log(`tasks.json parse error: ${j.__error}`, "bad"); return; }
+    if (j.__error){ log(`tasks.json parse error: ${j.__error}`, "bad", root); return; }
     mergeManifest(j);
     if (Array.isArray(j.roots?.tasks)) registry.roots.tasks = Array.from(new Set([...registry.roots.tasks, ...j.roots.tasks]));
     clearCaches();
-    refreshAllUI();
-    renderOnce();
-    log(`Loaded tasks manifest: ${file.name}`);
+    refreshAllUI(root);
+    renderOnce(root);
+    log(`Loaded tasks manifest: ${file.name}`, "info", root);
   }
 
-  function saveTemplateJson(){
+  function saveTemplateJson(cardRoot){
+    const root = resolveCardRoot(cardRoot);
     const tplId = registry.roots.template;
     const tpl = tplId ? getNode(tplId) : null;
     if (!tpl || tpl.type !== "Template"){
-      log("No Template root to save.", "bad");
+      log("No Template root to save.", "bad", root);
       return;
     }
     // Include Template + its referenced rects and frames; plus any assets those rects reference.
@@ -71,14 +75,15 @@
 
     const manifest = { manifestVersion: 1, nodes, roots: { template: tplId, assets: Array.from(assets) } };
     downloadText("template.json", JSON.stringify(manifest, null, 2));
-    log("Saved template.json");
+    log("Saved template.json", "info", root);
   }
 
-  function saveRecipeJson(){
+  function saveRecipeJson(cardRoot){
+    const root = resolveCardRoot(cardRoot);
     const recId = registry.roots.recipe;
     const rec = recId ? getNode(recId) : null;
     if (!rec || rec.type !== "Recipe"){
-      log("No Recipe root to save.", "bad");
+      log("No Recipe root to save.", "bad", root);
       return;
     }
     const nodes = {};
@@ -101,13 +106,14 @@
 
     const manifest = { manifestVersion: 1, nodes, roots: { recipe: recId, assets: Array.from(assets) } };
     downloadText("animation.json", JSON.stringify(manifest, null, 2));
-    log("Saved animation.json");
+    log("Saved animation.json", "info", root);
   }
 
-  function saveTasksJson(){
+  function saveTasksJson(cardRoot){
+    const root = resolveCardRoot(cardRoot);
     const taskIds = listNodesOfType("Task").map(x => x.id);
     if (taskIds.length === 0){
-      log("No tasks to save.", "warn");
+      log("No tasks to save.", "warn", root);
       return;
     }
     const nodes = {};
@@ -117,5 +123,5 @@
     }
     const manifest = { manifestVersion: 1, nodes, roots: { tasks: taskIds.slice() } };
     downloadText("tasks.json", JSON.stringify(manifest, null, 2));
-    log("Saved tasks.json");
+    log("Saved tasks.json", "info", root);
   }

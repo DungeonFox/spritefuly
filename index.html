@@ -109,17 +109,17 @@ END README
 </header>
 
 <div class="card-container">
-  <div class="card-shell">
-  <div class="tcg-card" data-card-id="">
+  <div class="card-shell" data-card-id="">
+  <div class="tcg-card">
     <div class="card-header">
       <div class="card-header__title">
         <span data-role="card-title"></span>
-        <span id="playMini" class="card-header__status">stopped</span>
+        <span data-role="play-mini" class="card-header__status">stopped</span>
       </div>
       <div class="card-header__badge card-header__controls">
-        <button id="btnPlay" class="card-control" type="button" title="Play/Pause preview" aria-label="Play or pause preview" aria-pressed="false">▶</button>
-        <button id="btnStep" class="card-control" type="button" title="Step preview" aria-label="Step preview frame">⏭</button>
-        <button id="btnReset" class="card-control" type="button" title="Reset preview" aria-label="Reset preview">⟲</button>
+        <button data-role="btn-play" class="card-control" type="button" title="Play/Pause preview" aria-label="Play or pause preview" aria-pressed="false">▶</button>
+        <button data-role="btn-step" class="card-control" type="button" title="Step preview" aria-label="Step preview frame">⏭</button>
+        <button data-role="btn-reset" class="card-control" type="button" title="Reset preview" aria-label="Reset preview">⟲</button>
         <span class="card-header__divider" aria-hidden="true"></span>
         <button class="card-control card-control--toggle is-active" type="button" data-panel-toggle="registry" aria-pressed="true" title="Toggle registry panel" aria-label="Toggle registry panel">🗂</button>
         <button class="card-control card-control--toggle is-active" type="button" data-panel-toggle="log" aria-pressed="true" title="Toggle log panel" aria-label="Toggle log panel">📜</button>
@@ -127,10 +127,10 @@ END README
     </div>
     <div class="card-image">
       <div class="card-image__frame">
-        <canvas id="previewCanvas" width="256" height="256"></canvas>
+        <canvas data-role="preview-canvas" width="256" height="256"></canvas>
         <div class="row card-image__meta" style="justify-content:space-between;">
-          <div class="small muted">Frame: <span id="frameInfo" class="mono"></span></div>
-          <div class="small muted">Size: <span id="sizeInfo" class="mono"></span></div>
+          <div class="small muted">Frame: <span data-role="frame-info" class="mono"></span></div>
+          <div class="small muted">Size: <span data-role="size-info" class="mono"></span></div>
         </div>
       </div>
     </div>
@@ -138,26 +138,26 @@ END README
       <!-- TEMPLATE -->
       <section class="panel">
         <h2>
-          <span>Template Editor <span class="mini" id="tplRootMini"></span></span>
+          <span>Template Editor <span class="mini" data-role="tpl-root-mini"></span></span>
           <span class="kbar">
-            <input id="fileTemplate" type="file" accept=".json,application/json" />
-            <button id="btnSaveTemplate">Save template.json</button>
+            <input data-role="file-template" type="file" accept=".json,application/json" />
+            <button data-role="btn-save-template">Save template.json</button>
           </span>
         </h2>
-        <div class="content" id="templatePanel">
+        <div class="content" data-role="template-panel">
           <div class="grid2">
             <div class="field">
               <label>tileW / tileH</label>
               <div class="row">
-                <input id="tplTileW" type="number" min="1" step="1" />
-                <input id="tplTileH" type="number" min="1" step="1" />
+                <input data-role="tpl-tile-w" type="number" min="1" step="1" />
+                <input data-role="tpl-tile-h" type="number" min="1" step="1" />
               </div>
             </div>
             <div class="field">
               <label>gridW / gridH (output size = tileW×gridW by tileH×gridH)</label>
               <div class="row">
-                <input id="tplGridW" type="number" min="1" step="1" />
-                <input id="tplGridH" type="number" min="1" step="1" />
+                <input data-role="tpl-grid-w" type="number" min="1" step="1" />
+                <input data-role="tpl-grid-h" type="number" min="1" step="1" />
               </div>
             </div>
           </div>
@@ -170,13 +170,13 @@ END README
               <div class="small muted">IDs are stable refs. Rects are shared across layers.</div>
             </div>
             <div class="row">
-              <button id="btnAddRect">+ Rect</button>
-              <button id="btnDelRect" class="danger">Delete Selected</button>
+              <button data-role="btn-add-rect">+ Rect</button>
+              <button data-role="btn-del-rect" class="danger">Delete Selected</button>
             </div>
           </div>
 
           <div style="height:8px"></div>
-          <div class="list" id="rectList"></div>
+          <div class="list" data-role="rect-list"></div>
 
           <div class="hr"></div>
 
@@ -186,13 +186,13 @@ END README
               <div class="small muted">Recipe overrides are keyed by FrameSlot IDs.</div>
             </div>
             <div class="row">
-              <button id="btnAddFrame">+ FrameSlot</button>
-              <button id="btnDelFrame" class="danger">Delete Selected</button>
+              <button data-role="btn-add-frame">+ FrameSlot</button>
+              <button data-role="btn-del-frame" class="danger">Delete Selected</button>
             </div>
           </div>
 
           <div style="height:8px"></div>
-          <div class="list" id="frameList"></div>
+          <div class="list" data-role="frame-list"></div>
         </div>
       </section>
     </div>
@@ -200,16 +200,16 @@ END README
       <!-- RECIPE -->
       <section class="panel">
         <h2>
-          <span>Animation Recipe Builder <span class="mini" id="recRootMini"></span></span>
+          <span>Animation Recipe Builder <span class="mini" data-role="rec-root-mini"></span></span>
           <span class="kbar">
-            <input id="fileRecipe" type="file" accept=".json,application/json" />
-            <button id="btnSaveRecipe">Save animation.json</button>
+            <input data-role="file-recipe" type="file" accept=".json,application/json" />
+            <button data-role="btn-save-recipe">Save animation.json</button>
           </span>
         </h2>
-        <div class="content" id="recipePanel">
+        <div class="content" data-role="recipe-panel">
           <div class="field">
             <label>Recipe → Template Root</label>
-            <select id="recipeTemplateSelect"></select>
+            <select data-role="recipe-template-select"></select>
             <div class="small muted" style="margin-top:6px">
               This recipe renders using the selected Template root node.
             </div>
@@ -223,13 +223,13 @@ END README
               <div class="small muted">Load images (embedded as data URLs for portability).</div>
             </div>
             <div class="row">
-              <input id="fileAsset" type="file" accept="image/*" multiple />
-              <button id="btnAddAsset">+ Empty Asset</button>
+              <input data-role="file-asset" type="file" accept="image/*" multiple />
+              <button data-role="btn-add-asset">+ Empty Asset</button>
             </div>
           </div>
 
           <div style="height:8px"></div>
-          <div class="list" id="assetList"></div>
+          <div class="list" data-role="asset-list"></div>
 
           <div class="hr"></div>
 
@@ -239,20 +239,20 @@ END README
               <div class="small muted">Each layer samples an Asset and draws a Rect, with per-frame overrides.</div>
             </div>
             <div class="row">
-              <button id="btnAddLayer">+ Layer</button>
-              <button id="btnDelLayer" class="danger">Delete Selected</button>
+              <button data-role="btn-add-layer">+ Layer</button>
+              <button data-role="btn-del-layer" class="danger">Delete Selected</button>
             </div>
           </div>
 
           <div style="height:8px"></div>
-          <div class="list" id="layerList"></div>
+          <div class="list" data-role="layer-list"></div>
 
           <div class="hr"></div>
           <div class="field">
             <label>Selected Layer Overrides (by FrameSlot)</label>
             <div class="small muted">Override rect and/or dx/dy/opacity for specific FrameSlots.</div>
             <div style="height:8px"></div>
-            <div class="list" id="overrideList"></div>
+            <div class="list" data-role="override-list"></div>
           </div>
         </div>
       </section>
@@ -261,37 +261,37 @@ END README
     <!-- TASKER -->
     <section class="panel">
     <h2>
-      <span>Tasker Manager <span class="mini" id="taskRootMini"></span></span>
+      <span>Tasker Manager <span class="mini" data-role="task-root-mini"></span></span>
       <span class="kbar">
-        <input id="fileTasker" type="file" accept=".json,application/json" />
-        <button id="btnSaveTasks">Save tasks.json</button>
-        <button id="btnRunTasks" class="primary">Run Tasks</button>
+        <input data-role="file-tasker" type="file" accept=".json,application/json" />
+        <button data-role="btn-save-tasks">Save tasks.json</button>
+        <button data-role="btn-run-tasks" class="primary">Run Tasks</button>
       </span>
     </h2>
-    <div class="content" id="taskPanel">
+    <div class="content" data-role="task-panel">
       <div class="row" style="justify-content:space-between; align-items:flex-end;">
         <div>
           <div class="muted small">Tasks</div>
           <div class="small muted">Define tasks that control the pop‑out viewer.</div>
         </div>
         <div class="row">
-          <button id="btnAddTask">+ Task</button>
-          <button id="btnDelTask" class="danger">Delete Selected</button>
+          <button data-role="btn-add-task">+ Task</button>
+          <button data-role="btn-del-task" class="danger">Delete Selected</button>
         </div>
       </div>
       <div style="height:8px"></div>
-      <div class="list" id="taskList"></div>
+      <div class="list" data-role="task-list"></div>
       <div class="hr"></div>
       <div class="field">
         <label>Selected Task Editor</label>
         <div class="small muted">Edit name and commands (as JSON array). Commands are executed sequentially.</div>
         <div class="row" style="gap:8px; margin-top:6px">
-          <input id="taskNameInput" type="text" placeholder="Task name" style="flex:1" />
+          <input data-role="task-name-input" type="text" placeholder="Task name" style="flex:1" />
         </div>
         <div style="height:6px"></div>
-        <textarea id="taskCommandsInput" placeholder='[{"cmd":"play"}]'></textarea>
+        <textarea data-role="task-commands-input" placeholder='[{"cmd":"play"}]'></textarea>
         <div class="row" style="margin-top:6px; justify-content:flex-end">
-          <button id="btnUpdateTask">Update Task</button>
+          <button data-role="btn-update-task">Update Task</button>
         </div>
       </div>
 
@@ -301,15 +301,15 @@ END README
         <label>Pop‑out Viewer Geometry</label>
         <div class="small muted">Configure the default size and screen position of the pop‑out viewer. These values are used when opening a new viewer and can be applied to an open viewer at any time.</div>
         <div class="row" style="flex-wrap:wrap; gap:8px; margin-top:6px">
-          <label for="popoutWidth" style="font-size:11px">W</label>
-          <input id="popoutWidth" type="number" min="100" step="10" style="width:70px" />
-          <label for="popoutHeight" style="font-size:11px">H</label>
-          <input id="popoutHeight" type="number" min="100" step="10" style="width:70px" />
-          <label for="popoutLeft" style="font-size:11px">Left</label>
-          <input id="popoutLeft" type="number" step="10" style="width:70px" />
-          <label for="popoutTop" style="font-size:11px">Top</label>
-          <input id="popoutTop" type="number" step="10" style="width:70px" />
-          <button id="popoutGeometryApply" class="primary">Apply</button>
+          <label style="font-size:11px">W</label>
+          <input data-role="popout-width" type="number" min="100" step="10" style="width:70px" aria-label="Pop-out width" />
+          <label style="font-size:11px">H</label>
+          <input data-role="popout-height" type="number" min="100" step="10" style="width:70px" aria-label="Pop-out height" />
+          <label style="font-size:11px">Left</label>
+          <input data-role="popout-left" type="number" step="10" style="width:70px" aria-label="Pop-out left" />
+          <label style="font-size:11px">Top</label>
+          <input data-role="popout-top" type="number" step="10" style="width:70px" aria-label="Pop-out top" />
+          <button data-role="popout-geometry-apply" class="primary">Apply</button>
         </div>
       </div>
     </div>
@@ -317,12 +317,14 @@ END README
     <div class="card-footer">
       <div class="kbar">
         <div class="toggle">
-          <input id="deterministicIds" type="checkbox" checked />
-          <label for="deterministicIds" title="Recompute IDs from canonical node content and rewrite references.">Deterministic IDs</label>
+          <label title="Recompute IDs from canonical node content and rewrite references.">
+            <input data-role="deterministic-ids" type="checkbox" checked />
+            Deterministic IDs
+          </label>
         </div>
-        <button id="btnRehash" class="primary" title="Recompute IDs topologically; rewrite references; clears caches.">Recompute IDs</button>
-        <button id="btnPopout" class="primary">Pop‑out Viewer</button>
-        <button id="btnExportAtlas" class="primary">Export Atlas PNG + JSON</button>
+        <button data-role="btn-rehash" class="primary" title="Recompute IDs topologically; rewrite references; clears caches.">Recompute IDs</button>
+        <button data-role="btn-popout" class="primary">Pop‑out Viewer</button>
+        <button data-role="btn-export-atlas" class="primary">Export Atlas PNG + JSON</button>
       </div>
     </div>
   </div>
@@ -335,10 +337,10 @@ END README
       <div class="content rightStack">
         <div class="field">
           <label>Registry Manifests (merged view)</label>
-          <textarea id="mergedJson" spellcheck="false"></textarea>
+          <textarea data-role="merged-json" spellcheck="false"></textarea>
           <div class="row">
-            <button id="btnCopyMerged">Copy</button>
-            <button id="btnLoadMerged">Load (Merged JSON)</button>
+            <button data-role="btn-copy-merged">Copy</button>
+            <button data-role="btn-load-merged">Load (Merged JSON)</button>
           </div>
           <div class="small muted">
             Useful for debugging graph structure. Loading replaces current registry.
@@ -353,7 +355,7 @@ END README
       <div class="content rightStack">
         <div class="field">
           <label>Log</label>
-          <div id="log" class="log"></div>
+          <div data-role="log" class="log"></div>
         </div>
       </div>
     </section>

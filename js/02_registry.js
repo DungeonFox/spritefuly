@@ -55,10 +55,18 @@
     };
   }
 
-  function updateStatus(){
-    statusPill.textContent = `registry: ${registry.nodes.size} nodes`;
-    $("#tplRootMini").textContent = registry.roots.template ? registry.roots.template : "(no template root)";
-    $("#recRootMini").textContent = registry.roots.recipe ? registry.roots.recipe : "(no recipe root)";
-    $("#taskRootMini").textContent = (registry.roots.tasks && registry.roots.tasks.length) ? `${registry.roots.tasks.length} task(s)` : "(no tasks)";
-    $("#mergedJson").value = JSON.stringify(toManifestSnapshot(), null, 2);
+  function updateStatus(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (statusPill){
+      statusPill.textContent = `registry: ${registry.nodes.size} nodes`;
+    }
+    if (!root) return;
+    const tplMini = $role(root, "tpl-root-mini");
+    const recMini = $role(root, "rec-root-mini");
+    const taskMini = $role(root, "task-root-mini");
+    const mergedJson = $role(root, "merged-json");
+    if (tplMini) tplMini.textContent = registry.roots.template ? registry.roots.template : "(no template root)";
+    if (recMini) recMini.textContent = registry.roots.recipe ? registry.roots.recipe : "(no recipe root)";
+    if (taskMini) taskMini.textContent = (registry.roots.tasks && registry.roots.tasks.length) ? `${registry.roots.tasks.length} task(s)` : "(no tasks)";
+    if (mergedJson) mergedJson.value = JSON.stringify(toManifestSnapshot(), null, 2);
   }

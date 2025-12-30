@@ -1,15 +1,33 @@
   // ---------------------------
   // Renderer (flipbook compositing)
   // ---------------------------
-  const previewCanvas = $("#previewCanvas");
-  const pctx = previewCanvas.getContext("2d", { willReadFrequently: true });
+  const rendererStates = new WeakMap();
+  const sharedImages = new Map(); // assetId -> HTMLImageElement
 
-  const images = new Map(); // assetId -> HTMLImageElement
+  function getRendererState(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return null;
+    let state = rendererStates.get(root);
+    if (state) return state;
+    const previewCanvas = $role(root, "preview-canvas");
+    const pctx = previewCanvas ? previewCanvas.getContext("2d", { willReadFrequently: true }) : null;
+    state = {
+      previewCanvas,
+      pctx,
+      images: new Map(),
+      playing: false,
+      curFrame: 0,
+      nextAt: 0
+    };
+    rendererStates.set(root, state);
+    return state;
+  }
 
-  async function ensureAssetImage(assetId){
+  async function ensureAssetImage(assetId, imageCache){
     const asset = getNode(assetId);
     if (!asset || asset.type !== "Asset") return null;
-    if (images.has(assetId)) return images.get(assetId);
+    const cache = imageCache || sharedImages;
+    if (cache.has(assetId)) return cache.get(assetId);
 
     if (!asset.src || typeof asset.src !== "string" || !asset.src.startsWith("data:image/")){
       // Can't load; keep placeholder
@@ -25,7 +43,7 @@
     img.src = asset.src;
     try{
       await prom;
-      images.set(assetId, img);
+      cache.set(assetId, img);
       return img;
     } catch {
       return null;
@@ -62,7 +80,7 @@
     return plan;
   }
 
-  async function composeFrameToCanvas(plan, frameIndex, targetCtx){
+  async function composeFrameToCanvas(plan, frameIndex, targetCtx, imageCache){
     const tpl = getNode(plan.tplId);
     const outW = plan.outSize.w, outH = plan.outSize.h;
     targetCtx.clearRect(0,0,outW,outH);
@@ -90,7 +108,7 @@
       if (!rect) continue;
 
       const assetId = layer.asset || rect.asset;
-      const img = await ensureAssetImage(assetId);
+      const img = await ensureAssetImage(assetId, imageCache);
       if (!img) {
         // draw placeholder
         targetCtx.save();
@@ -128,13 +146,9 @@
     }
   }
 
-  // Playback loop
-  let playing = false;
-  let curFrame = 0;
-  let nextAt = 0;
-
-  function setPlayButtonState(isPlaying){
-    const btn = $("#btnPlay");
+  function setPlayButtonState(cardRoot, isPlaying){
+    const root = resolveCardRoot(cardRoot);
+    const btn = root ? $role(root, "btn-play") : null;
     if (!btn) return;
     btn.textContent = isPlaying ? "⏸" : "▶";
     btn.setAttribute("aria-pressed", isPlaying ? "true" : "false");
@@ -148,44 +162,57 @@
     return Math.max(1, d);
   }
 
-  async function renderOnce(){
+  async function renderOnce(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    const state = getRendererState(root);
+    if (!state || !state.previewCanvas || !state.pctx) return;
     const plan = registry.roots.recipe ? buildRenderPlan(registry.roots.recipe) : null;
     if (!plan){
-      pctx.clearRect(0,0,previewCanvas.width, previewCanvas.height);
-      $("#frameInfo").textContent = "(no plan)";
-      $("#sizeInfo").textContent = "-";
+      state.pctx.clearRect(0,0,state.previewCanvas.width, state.previewCanvas.height);
+      const frameInfo = $role(root, "frame-info");
+      const sizeInfo = $role(root, "size-info");
+      if (frameInfo) frameInfo.textContent = "(no plan)";
+      if (sizeInfo) sizeInfo.textContent = "-";
       return;
     }
     const outW = plan.outSize.w, outH = plan.outSize.h;
-    if (previewCanvas.width !== outW || previewCanvas.height !== outH){
-      previewCanvas.width = outW; previewCanvas.height = outH;
+    if (state.previewCanvas.width !== outW || state.previewCanvas.height !== outH){
+      state.previewCanvas.width = outW; state.previewCanvas.height = outH;
     }
-    await composeFrameToCanvas(plan, curFrame, pctx);
+    await composeFrameToCanvas(plan, state.curFrame, state.pctx, state.images);
 
-    const f = plan.frames[curFrame];
-    const fname = f?.node?.name || `#${curFrame}`;
-    $("#frameInfo").textContent = `${curFrame}/${Math.max(0,plan.frames.length-1)}  ${fname}  (${getFrameDurationMs(plan,curFrame)}ms)`;
-    $("#sizeInfo").textContent = `${outW}×${outH}`;
-    $("#playMini").textContent = playing ? "playing" : "stopped";
+    const f = plan.frames[state.curFrame];
+    const fname = f?.node?.name || `#${state.curFrame}`;
+    const frameInfo = $role(root, "frame-info");
+    const sizeInfo = $role(root, "size-info");
+    const playMini = $role(root, "play-mini");
+    if (frameInfo){
+      frameInfo.textContent = `${state.curFrame}/${Math.max(0,plan.frames.length-1)}  ${fname}  (${getFrameDurationMs(plan,state.curFrame)}ms)`;
+    }
+    if (sizeInfo) sizeInfo.textContent = `${outW}×${outH}`;
+    if (playMini) playMini.textContent = state.playing ? "playing" : "stopped";
   }
 
-  async function tick(){
-    if (!playing){ return; }
+  async function tick(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    const state = getRendererState(root);
+    if (!state || !state.playing){ return; }
     const plan = registry.roots.recipe ? buildRenderPlan(registry.roots.recipe) : null;
     if (!plan || plan.frames.length === 0){
-      playing = false;
-      setPlayButtonState(false);
-      $("#playMini").textContent = "stopped";
+      state.playing = false;
+      setPlayButtonState(root, false);
+      const playMini = root ? $role(root, "play-mini") : null;
+      if (playMini) playMini.textContent = "stopped";
       return;
     }
     const now = performance.now();
-    if (now >= nextAt){
-      await renderOnce();
-      const dur = getFrameDurationMs(plan, curFrame);
-      nextAt = now + dur;
-      curFrame = (curFrame + 1) % plan.frames.length;
+    if (now >= state.nextAt){
+      await renderOnce(root);
+      const dur = getFrameDurationMs(plan, state.curFrame);
+      state.nextAt = now + dur;
+      state.curFrame = (state.curFrame + 1) % plan.frames.length;
       // notify popout
-      pushStateToPopout(false);
+      pushStateToPopout(false, root);
     }
-    requestAnimationFrame(tick);
+    requestAnimationFrame(() => tick(root));
   }

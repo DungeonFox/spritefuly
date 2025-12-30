@@ -1,27 +1,47 @@
   // ---------------------------
   // Task Runner
   // ---------------------------
-  let runningTasks = false;
+  const taskRunnerStates = new Map();
+  const DEFAULT_CARD_KEY = "default";
 
-  // Holds deferred window geometry triggers that fire when specific animation frames are reached.
-  // Each entry has optional criteria (frameIndex, frameId, frameName) and geometry properties (left, top, width, height),
-  // plus an optional repeat flag. When a matching frame event is received from the viewer the geometry change
-  // is applied via setWindowGeometry and one-shot triggers are removed.
-  let frameTriggers = [];
-  let geometryFallbackWarned = false;
+  function getTaskRunnerState(cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    const cardId = getCardIdFromRoot(root) || DEFAULT_CARD_KEY;
+    let state = taskRunnerStates.get(cardId);
+    if (!state){
+      state = {
+        cardId,
+        runningTasks: false,
+        frameTriggers: [],
+        geometryFallbackWarned: false
+      };
+      taskRunnerStates.set(cardId, state);
+    }
+    state.root = root;
+    return state;
+  }
 
-  function geometryTokenValues(){
+  function getFrameTriggersForCard(cardId){
+    const key = cardId || DEFAULT_CARD_KEY;
+    const state = taskRunnerStates.get(key);
+    return state ? state.frameTriggers : [];
+  }
+
+  window.getFrameTriggersForCard = getFrameTriggersForCard;
+
+  function geometryTokenValues(cardRoot){
+    const state = getTaskRunnerState(cardRoot);
     const values = {
       CLl: 0,
       CLt: 0,
       CLw: 0,
       CLh: 0
     };
-    const currentViewerGeometry = window.currentViewerGeometry;
+    const currentViewerGeometry = window.currentViewerGeometryByCard?.get(state.cardId);
     if (!currentViewerGeometry || typeof currentViewerGeometry !== "object"){
-      if (!geometryFallbackWarned){
-        log("Tasker: viewer window geometry unavailable; using 0 for CL* tokens.", "warn");
-        geometryFallbackWarned = true;
+      if (!state.geometryFallbackWarned){
+        log("Tasker: viewer window geometry unavailable; using 0 for CL* tokens.", "warn", state.root);
+        state.geometryFallbackWarned = true;
       }
       return values;
     }
@@ -40,9 +60,9 @@
         missing = true;
       }
     }
-    if (missing && !geometryFallbackWarned){
-      log("Tasker: viewer window geometry incomplete; using 0 for missing CL* tokens.", "warn");
-      geometryFallbackWarned = true;
+    if (missing && !state.geometryFallbackWarned){
+      log("Tasker: viewer window geometry incomplete; using 0 for missing CL* tokens.", "warn", state.root);
+      state.geometryFallbackWarned = true;
     }
     return values;
   }
@@ -62,7 +82,7 @@
     return normalized;
   }
 
-  function tokenizeGeometryExpression(expr){
+  function tokenizeGeometryExpression(expr, cardRoot){
     const tokens = [];
     const re = /\s*([+\-*/]|CL[ltwh]|\d*\.?\d+)\s*/giy;
     let endIndex = 0;
@@ -87,26 +107,27 @@
       const reason = tokens.length === 0
         ? "no tokens parsed"
         : `unexpected token at index ${endIndex}`;
-      log(`Tasker: rejected geometry expression "${expr}" (${reason}).`, "warn");
+      log(`Tasker: rejected geometry expression "${expr}" (${reason}).`, "warn", cardRoot);
       return null;
     }
     return tokens;
   }
 
-  function evaluateGeometryExpression(expr){
+  function evaluateGeometryExpression(expr, cardRoot){
     if (typeof expr !== "string") return null;
-    log(`Tasker: expr raw="${expr}"`, "warn");
+    const root = resolveCardRoot(cardRoot);
+    log(`Tasker: expr raw="${expr}"`, "warn", root);
     const rawCodes = Array.from(expr).map(ch => ch.codePointAt(0).toString(16)).join(" ");
-    log(`Tasker: expr codepoints=${rawCodes}`, "warn");
+    log(`Tasker: expr codepoints=${rawCodes}`, "warn", root);
     const trimmed = expr.trim();
-    log(`Tasker: expr trim="${trimmed}"`, "warn");
+    log(`Tasker: expr trim="${trimmed}"`, "warn", root);
     const trimCodes = Array.from(trimmed).map(ch => ch.codePointAt(0).toString(16)).join(" ");
-    log(`Tasker: expr trim codepoints=${trimCodes}`, "warn");
+    log(`Tasker: expr trim codepoints=${trimCodes}`, "warn", root);
     const normalized = normalizeGeometryExpression(expr);
     if (typeof normalized !== "string") return null;
-    const tokens = tokenizeGeometryExpression(normalized);
+    const tokens = tokenizeGeometryExpression(normalized, root);
     if (!tokens) return null;
-    const values = geometryTokenValues();
+    const values = geometryTokenValues(root);
     let idx = 0;
 
     function parseFactor(){
@@ -161,7 +182,7 @@
     return result;
   }
 
-  function normalizeGeometryFields(source, target, contextLabel){
+  function normalizeGeometryFields(source, target, contextLabel, cardRoot){
     const fields = ["left", "top", "width", "height"];
     for (const field of fields){
       if (!source.hasOwnProperty(field)) continue;
@@ -171,31 +192,31 @@
           target[field] = value;
         } else {
           if (target.hasOwnProperty(field)) delete target[field];
-          log(`Tasker: skipped ${contextLabel} ${field} value (non-finite number).`, "warn");
+          log(`Tasker: skipped ${contextLabel} ${field} value (non-finite number).`, "warn", cardRoot);
         }
         continue;
       }
       if (typeof value === "string"){
-        const evaluated = evaluateGeometryExpression(value);
+        const evaluated = evaluateGeometryExpression(value, cardRoot);
         if (typeof evaluated === "number" && Number.isFinite(evaluated)){
           target[field] = evaluated;
         } else {
           if (target.hasOwnProperty(field)) delete target[field];
-          log(`Tasker: skipped ${contextLabel} ${field} value "${value}" (invalid expression).`, "warn");
+          log(`Tasker: skipped ${contextLabel} ${field} value "${value}" (invalid expression).`, "warn", cardRoot);
         }
         continue;
       }
       if (value !== undefined){
         if (target.hasOwnProperty(field)) delete target[field];
-        log(`Tasker: skipped ${contextLabel} ${field} value (non-number).`, "warn");
+        log(`Tasker: skipped ${contextLabel} ${field} value (non-number).`, "warn", cardRoot);
       }
     }
   }
 
-  function buildGeometryCommandFromTrigger(trigger){
+  function buildGeometryCommandFromTrigger(trigger, cardRoot){
     if (!trigger || typeof trigger !== "object") return null;
     const cmd = { cmd: "setWindowGeometry" };
-    normalizeGeometryFields(trigger, cmd, "trigger");
+    normalizeGeometryFields(trigger, cmd, "trigger", cardRoot);
     if (typeof trigger.duration === "number" && Number.isFinite(trigger.duration)){
       cmd.duration = trigger.duration;
     }
@@ -205,28 +226,41 @@
     return cmd;
   }
 
-  async function runTasks(){
-    if (runningTasks){
-      log("Tasker is already running.", "warn");
+  function findCommandElement(cardRoot, id){
+    if (!id || typeof id !== "string") return null;
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return null;
+    const direct = $in(root, `[data-role="${id}"]`);
+    if (direct) return direct;
+    const role = toDataRole(id);
+    if (!role) return null;
+    return $in(root, `[data-role="${role}"]`);
+  }
+
+  async function runTasks(cardRoot){
+    const state = getTaskRunnerState(cardRoot);
+    const root = state.root;
+    if (state.runningTasks){
+      log("Tasker is already running.", "warn", root);
       return;
     }
     const taskIds = registry.roots.tasks || [];
     if (!taskIds.length){
-      log("No tasks to run.", "warn");
+      log("No tasks to run.", "warn", root);
       return;
     }
-    runningTasks = true;
-    log(`Starting ${taskIds.length} task(s)...`);
+    state.runningTasks = true;
+    log(`Starting ${taskIds.length} task(s)...`, "info", root);
     // Clear any existing frame triggers at the start of a run. New triggers will be
     // collected as tasks are processed.
-    frameTriggers = [];
+    state.frameTriggers = [];
     for (const tid of taskIds){
       const t = getNode(tid);
       if (!t || t.type !== "Task") continue;
-      log(`Running task: ${t.name || tid}`);
+      log(`Running task: ${t.name || tid}`, "info", root);
       const cmds = Array.isArray(t.commands) ? t.commands : [];
       for (const cmd of cmds){
-        if (!runningTasks) break;
+        if (!state.runningTasks) break;
         // Wait commands are handled locally; setWindowGeometryOnFrame commands are collected
         // as triggers; all other commands are forwarded to the viewer immediately.
         if (cmd.cmd === 'wait'){
@@ -235,12 +269,13 @@
         } else if (cmd.cmd === 'setDomValue'){
           const id = cmd.id;
           const value = cmd.value;
-          let el = (typeof id === "string") ? document.getElementById(id) : null;
-          if (!el && typeof id === "string" && popWin && !popWin.closed){
-            el = popWin.document.getElementById(id);
+          let el = findCommandElement(root, id);
+          const popoutWin = (typeof window.getPopoutWindow === "function") ? window.getPopoutWindow(root) : null;
+          if (!el && typeof id === "string" && popoutWin && !popoutWin.closed){
+            el = popoutWin.document.getElementById(id);
           }
           if (!el){
-            log(`Tasker: setDomValue element not found (id: ${id}).`, "warn");
+            log(`Tasker: setDomValue element not found (id: ${id}).`, "warn", root);
           } else {
             el.value = value;
             el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -248,12 +283,13 @@
           }
         } else if (cmd.cmd === 'clickDom'){
           const id = cmd.id;
-          let el = (typeof id === "string") ? document.getElementById(id) : null;
-          if (!el && typeof id === "string" && popWin && !popWin.closed){
-            el = popWin.document.getElementById(id);
+          let el = findCommandElement(root, id);
+          const popoutWin = (typeof window.getPopoutWindow === "function") ? window.getPopoutWindow(root) : null;
+          if (!el && typeof id === "string" && popoutWin && !popoutWin.closed){
+            el = popoutWin.document.getElementById(id);
           }
           if (!el){
-            log(`Tasker: clickDom element not found (id: ${id}).`, "warn");
+            log(`Tasker: clickDom element not found (id: ${id}).`, "warn", root);
           } else if (typeof el.click === "function"){
             el.click();
           }
@@ -270,19 +306,19 @@
           if (cmd.hasOwnProperty('duration')) trig.duration = cmd.duration;
           if (cmd.hasOwnProperty('ease')) trig.ease = cmd.ease;
           trig.repeat = !!cmd.repeat;
-          frameTriggers.push(trig);
+          state.frameTriggers.push(trig);
         } else {
           if (cmd.cmd === "setWindowGeometry"){
             const normalized = { ...cmd };
-            normalizeGeometryFields(cmd, normalized, "command");
-            const sent = sendCommandToViewer(normalized);
+            normalizeGeometryFields(cmd, normalized, "command", root);
+            const sent = sendCommandToViewer(normalized, root);
             if (!sent){
-              log("Tasker: viewer window is not open; geometry command skipped.", "warn");
+              log("Tasker: viewer window is not open; geometry command skipped.", "warn", root);
             }
           } else {
-            const sent = sendCommandToViewer(cmd);
+            const sent = sendCommandToViewer(cmd, root);
             if (!sent){
-              log("Tasker: viewer window is not open; command skipped.", "warn");
+              log("Tasker: viewer window is not open; command skipped.", "warn", root);
             }
           }
         }
@@ -290,8 +326,8 @@
         await new Promise(res => setTimeout(res, 0));
       }
     }
-    runningTasks = false;
-    log("Tasker finished.");
+    state.runningTasks = false;
+    log("Tasker finished.", "info", root);
   }
 
   window.buildGeometryCommandFromTrigger = buildGeometryCommandFromTrigger;
