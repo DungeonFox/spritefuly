@@ -65,7 +65,7 @@
 
   $("#btnPlay").onclick = async () => {
     playing = !playing;
-    $("#btnPlay").textContent = playing ? "Pause" : "Play";
+    setPlayButtonState(playing);
     if (playing){
       nextAt = performance.now();
       await renderOnce();

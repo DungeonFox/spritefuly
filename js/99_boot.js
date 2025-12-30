@@ -78,3 +78,19 @@
 
   // Push initial viewer state if open
   setInterval(() => pushStateToPopout(false), 1200);
+
+  // Toggle supplemental panels beside the card.
+  (function initSupplementalPanels(){
+    const toggles = document.querySelectorAll("[data-panel-toggle]");
+    if (!toggles.length) return;
+    toggles.forEach((toggle) => {
+      const target = toggle.getAttribute("data-panel-toggle");
+      const panel = document.querySelector(`[data-panel="${target}"]`);
+      if (!panel) return;
+      toggle.addEventListener("click", () => {
+        const hidden = panel.classList.toggle("is-hidden");
+        toggle.classList.toggle("is-active", !hidden);
+        toggle.setAttribute("aria-pressed", hidden ? "false" : "true");
+      });
+    });
+  })();
