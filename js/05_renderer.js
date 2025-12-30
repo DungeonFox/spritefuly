@@ -133,6 +133,15 @@
   let curFrame = 0;
   let nextAt = 0;
 
+  function setPlayButtonState(isPlaying){
+    const btn = $("#btnPlay");
+    if (!btn) return;
+    btn.textContent = isPlaying ? "⏸" : "▶";
+    btn.setAttribute("aria-pressed", isPlaying ? "true" : "false");
+    btn.title = isPlaying ? "Pause preview" : "Play preview";
+    btn.setAttribute("aria-label", isPlaying ? "Pause preview" : "Play preview");
+  }
+
   function getFrameDurationMs(plan, idx){
     const f = plan.frames[idx]?.node;
     const d = f ? (+f.duration||100) : 100;
@@ -165,7 +174,7 @@
     const plan = registry.roots.recipe ? buildRenderPlan(registry.roots.recipe) : null;
     if (!plan || plan.frames.length === 0){
       playing = false;
-      $("#btnPlay").textContent = "Play";
+      setPlayButtonState(false);
       $("#playMini").textContent = "stopped";
       return;
     }
