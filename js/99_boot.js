@@ -24,9 +24,20 @@
     const viewBox = getViewBoxDimensions(svg);
     if (!viewBox || !viewBox.width || !viewBox.height) return;
     const rect = card.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const scaleX = rect.width / viewBox.width;
-    const scaleY = rect.height / viewBox.height;
+    const viewportWidth = window.innerWidth || rect.width;
+    const viewportHeight = window.innerHeight || rect.height;
+    const viewportScale = Math.min(
+      viewportWidth / viewBox.width,
+      viewportHeight / viewBox.height
+    );
+    const safeViewportScale = Number.isFinite(viewportScale) && viewportScale > 0 ? viewportScale : 1;
+    const cardWidth = viewBox.width * safeViewportScale;
+    const cardHeight = viewBox.height * safeViewportScale;
+    card.style.setProperty("--visual-grid-unit", safeViewportScale);
+    card.style.setProperty("--card-w", `${cardWidth}px`);
+    card.style.setProperty("--card-h", `${cardHeight}px`);
+    const scaleX = cardWidth / viewBox.width;
+    const scaleY = cardHeight / viewBox.height;
     const scale = Math.min(scaleX, scaleY);
     card.style.setProperty("--card-scale", scale);
     card.style.setProperty("--card-scale-x", scaleX);
@@ -98,6 +109,16 @@
   })();
 
   cardRoots.forEach((root) => initCardLayout(root));
+
+  const updateAllCardLayouts = () => {
+    cardRoots.forEach((root) => {
+      const card = root.querySelector(".tcg-card");
+      if (!card) return;
+      updateCardLayout(card);
+    });
+  };
+
+  window.addEventListener("resize", updateAllCardLayouts);
 
   cardRoots.forEach((root) => {
     refreshAllUI(root);
