@@ -246,6 +246,10 @@
       root.dataset.cardId = cardId;
       const title = $role(root, "card-title");
       if (title) title.textContent = `Sprite Editor Deck · ${cardId}`;
+      const panelHosts = root.querySelectorAll(".card-adjacent, .card-adjacent [data-panel]");
+      panelHosts.forEach((panelHost) => {
+        panelHost.dataset.cardId = cardId;
+      });
     });
   })();
 
