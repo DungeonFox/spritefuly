@@ -7,6 +7,10 @@
   const IDEAL_CARD_SCALE = 1.1;
   const MIN_CARD_ZOOM = 0.85;
   const MAX_CARD_ZOOM = 1.1;
+  const POOL_MIN_CARD_ZOOM = 0.65;
+  const POOL_MAX_CARD_ZOOM = 0.95;
+  const FALLBACK_POOL_SCALE = 0.8;
+  const FALLBACK_FOCUS_SCALE = 1;
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
   const rootStyle = document.documentElement.style;
@@ -108,6 +112,25 @@
     return card ? (card.closest(".card-container") || document.documentElement) : document.documentElement;
   }
 
+  function readCssNumber(value, fallback){
+    if (typeof value !== "string") return fallback;
+    const parsed = Number.parseFloat(value.trim());
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function getCardState(card){
+    const rawState = card && card.dataset ? card.dataset.cardState : "";
+    return rawState ? rawState.toLowerCase() : "focused";
+  }
+
+  function getCardStateScale(card, state){
+    const style = window.getComputedStyle(card || document.documentElement);
+    if (state === "pool"){
+      return readCssNumber(style.getPropertyValue("--card-pool-scale"), FALLBACK_POOL_SCALE);
+    }
+    return readCssNumber(style.getPropertyValue("--card-focus-scale"), FALLBACK_FOCUS_SCALE);
+  }
+
   function updateCardLayout(card){
     if (!card) return;
     const svg = card.querySelector(".card-layout");
@@ -128,8 +151,12 @@
       viewportHeight / idealHeight
     );
     const safeViewportScale = Number.isFinite(viewportScale) && viewportScale > 0 ? viewportScale : 1;
-    const unclampedZoom = safeViewportScale;
-    const clampedZoom = Math.min(Math.max(unclampedZoom, MIN_CARD_ZOOM), MAX_CARD_ZOOM);
+    const cardState = getCardState(card);
+    const stateScale = getCardStateScale(card, cardState);
+    const zoomMinimum = cardState === "pool" ? POOL_MIN_CARD_ZOOM : MIN_CARD_ZOOM;
+    const zoomMaximum = cardState === "pool" ? POOL_MAX_CARD_ZOOM : MAX_CARD_ZOOM;
+    const unclampedZoom = safeViewportScale * stateScale;
+    const clampedZoom = Math.min(Math.max(unclampedZoom, zoomMinimum), zoomMaximum);
     const cardWidth = idealWidth * clampedZoom;
     const cardHeight = idealHeight * clampedZoom;
     card.style.setProperty("--visual-grid-unit", clampedZoom);
