@@ -98,12 +98,30 @@
     card.style.setProperty("--image-gap", `${6 * baseScale}px`);
   }
 
+  function updateCardAnchor(root){
+    if (!root) return;
+    const anchor = root.querySelector(".card-anchored");
+    const controls = root.querySelector(".card-header__controls");
+    if (!anchor || !controls) return;
+    const anchorRect = anchor.getBoundingClientRect();
+    const controlsRect = controls.getBoundingClientRect();
+    const offsetX = controlsRect.left - anchorRect.left;
+    const offsetY = controlsRect.top - anchorRect.top;
+    anchor.style.setProperty("--controls-x", `${offsetX}px`);
+    anchor.style.setProperty("--controls-y", `${offsetY}px`);
+    anchor.style.setProperty("--controls-w", `${controlsRect.width}px`);
+  }
+
   function initCardLayout(root){
     const card = root.querySelector(".tcg-card");
     if (!card) return;
     updateCardLayout(card);
+    updateCardAnchor(root);
     if (!cardLayoutObservers.has(card)){
-      const observer = new ResizeObserver(() => updateCardLayout(card));
+      const observer = new ResizeObserver(() => {
+        updateCardLayout(card);
+        updateCardAnchor(root);
+      });
       observer.observe(card);
       cardLayoutObservers.set(card, observer);
     }
@@ -135,6 +153,7 @@
       const card = root.querySelector(".tcg-card");
       if (!card) return;
       updateCardLayout(card);
+      updateCardAnchor(root);
     });
   };
 
