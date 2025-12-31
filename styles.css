@@ -286,6 +286,8 @@
     display:flex;
     justify-content:center;
     align-items:center;
+    width:100%;
+    align-self:stretch;
     padding:8px 12px;
     padding-left:calc(12px + var(--footer-x, 0px));
     padding-right:calc(12px + (100% - var(--footer-w, 100%) - var(--footer-x, 0px)));
