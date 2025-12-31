@@ -94,7 +94,7 @@
       var(--section-gap, 16px)
       clamp(64px, var(--panels-h, 0px), 280px)
       var(--section-gap, 16px)
-      clamp(12px, var(--footer-h, 0px), 48px);
+      max(var(--footer-h, 0px), 28px);
     align-content:start;
   }
   .card-layout{
@@ -293,7 +293,7 @@
   }
   .card-footer{
     grid-row:7 / 8;
-    height:clamp(12px, var(--footer-h, 0px), 48px);
+    height:max(var(--footer-h, 0px), 28px);
     display:flex;
     justify-content:center;
     align-items:center;
