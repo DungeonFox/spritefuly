@@ -56,10 +56,22 @@
     return cardRoot?.dataset?.cardId || "";
   }
 
-  function findRoleInPanels(role, cardRoot){
+  function getPanelScope(cardRoot){
     const root = resolveCardRoot(cardRoot);
     if (!root) return null;
-    const panelScope = root.querySelector(".card-adjacent");
+    if (root.classList && root.classList.contains("card-adjacent")){
+      return root;
+    }
+    const cardId = getCardIdFromRoot(root);
+    if (cardId){
+      const scoped = document.querySelector(`.card-adjacent[data-card-id="${escapeCardSelector(cardId)}"]`);
+      if (scoped) return scoped;
+    }
+    return root.querySelector(".card-adjacent");
+  }
+
+  function findRoleInPanels(role, cardRoot){
+    const panelScope = getPanelScope(cardRoot);
     if (!panelScope) return null;
     return panelScope.querySelector(`[data-role="${role}"]`);
   }

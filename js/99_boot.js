@@ -438,8 +438,10 @@
     if (!toggles.length) return;
     toggles.forEach((toggle) => {
       const target = toggle.getAttribute("data-panel-toggle");
-      const panelScope = root.querySelector(".card-adjacent") || root;
-      const panel = panelScope.querySelector(`[data-panel="${target}"]`);
+      const panelScope = (typeof getPanelScope === "function")
+        ? getPanelScope(root)
+        : (root.querySelector(".card-adjacent") || root);
+      const panel = panelScope ? panelScope.querySelector(`[data-panel="${target}"]`) : null;
       if (!panel) return;
       toggle.addEventListener("click", () => {
         const hidden = panel.classList.toggle("is-hidden");
