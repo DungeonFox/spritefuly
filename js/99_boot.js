@@ -60,6 +60,10 @@
     return {x: minX, y: minY, width: maxX - minX, height: maxY - minY};
   }
 
+  function resolveCardContainer(card){
+    return card ? (card.closest(".card-container") || document.documentElement) : document.documentElement;
+  }
+
   function updateCardLayout(card){
     if (!card) return;
     const svg = card.querySelector(".card-layout");
@@ -71,7 +75,7 @@
     const baseHeight = viewBox.height || IDEAL_CARD_HEIGHT;
     const idealWidth = baseWidth * IDEAL_CARD_SCALE;
     const idealHeight = baseHeight * IDEAL_CARD_SCALE;
-    const container = card.parentElement || card;
+    const container = resolveCardContainer(card);
     const rect = container.getBoundingClientRect();
     const viewportWidth = rect.width || window.innerWidth || idealWidth;
     const viewportHeight = rect.height || window.innerHeight || idealHeight;
@@ -152,7 +156,7 @@
     updateCardLayout(card);
     if (!cardLayoutObservers.has(card)){
       const observer = new ResizeObserver(() => updateCardLayout(card));
-      observer.observe(card);
+      observer.observe(resolveCardContainer(card));
       cardLayoutObservers.set(card, observer);
     }
   }
