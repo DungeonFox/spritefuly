@@ -94,16 +94,15 @@
     const viewCenterY = viewBox.y + viewBox.height / 2;
     const layoutCenterX = layoutBounds.x + layoutBounds.width / 2;
     const layoutCenterY = layoutBounds.y + layoutBounds.height / 2;
-    const offsetX = (viewCenterX - layoutCenterX) * IDEAL_CARD_SCALE;
-    const offsetY = (viewCenterY - layoutCenterY) * IDEAL_CARD_SCALE;
-    card.style.setProperty("--card-content-offset-x", `${offsetX}px`);
-    card.style.setProperty("--card-content-offset-y", `${offsetY}px`);
     const scaleX = clampedZoom * (idealWidth / viewBox.width);
     const scaleY = clampedZoom * (idealHeight / viewBox.height);
     const scale = Math.min(scaleX, scaleY);
     card.style.setProperty("--card-scale", scale);
     card.style.setProperty("--card-scale-x", scaleX);
     card.style.setProperty("--card-scale-y", scaleY);
+    const offsetX = (viewCenterX - layoutCenterX) * IDEAL_CARD_SCALE;
+    const offsetY = (viewCenterY - layoutCenterY) * IDEAL_CARD_SCALE;
+    let headerInsetY = 0;
     const regions = svg.querySelectorAll("[data-region]");
     regions.forEach((region) => {
       const name = region.dataset.region;
@@ -124,6 +123,7 @@
       }
       if (name === "header" && h){
         card.style.setProperty("--header-h", `${h * scaleY}px`);
+        headerInsetY = y * scaleY;
       }
       if (name === "panels" && h){
         card.style.setProperty("--panels-h", `${h * scaleY}px`);
@@ -135,6 +135,8 @@
         card.style.setProperty("--footer-h", `${h * scaleY}px`);
       }
     });
+    card.style.setProperty("--card-content-offset-x", `${offsetX}px`);
+    card.style.setProperty("--card-content-offset-y", `${offsetY + headerInsetY}px`);
     const baseScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
     card.style.setProperty("--card-padding", `${18 * baseScale}px`);
     card.style.setProperty("--header-pad-x", `${14 * baseScale}px`);
