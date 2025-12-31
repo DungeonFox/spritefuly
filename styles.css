@@ -303,13 +303,6 @@
     min-width:0;
     width:100%;
   }
-  .tcg-card__content.is-absolute .card-footer{
-    position:absolute;
-    top:var(--footer-y, 0px);
-    left:var(--footer-x, 0px);
-    width:var(--footer-w, 100%);
-    height:var(--footer-h, 0px);
-  }
   .card-footer .kbar{
     width:100%;
     justify-content:center;
