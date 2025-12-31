@@ -111,64 +111,65 @@ END README
 <div class="card-container">
   <div class="card-shell" data-card-id="">
   <div class="tcg-card">
-    <svg class="card-layout" viewBox="0 0 1000 1400" aria-hidden="true">
-      <rect data-region="header" x="40" y="40" width="920" height="130"></rect>
-      <rect data-region="section-gap" x="40" y="180" width="920" height="20"></rect>
-      <rect data-region="image" x="40" y="210" width="920" height="280"></rect>
-      <rect data-region="panels" x="40" y="520" width="920" height="720"></rect>
-      <rect data-region="footer" x="40" y="1260" width="920" height="90"></rect>
-    </svg>
-    <div class="card-header">
-      <div class="card-header__title">
-        <span data-role="card-title"></span>
-        <span data-role="play-mini" class="card-header__status">stopped</span>
-      </div>
-      <div class="card-header__badge card-header__controls">
-        <button data-role="btn-play" class="card-control" type="button" title="Play/Pause preview" aria-label="Play or pause preview" aria-pressed="false">▶</button>
-        <button data-role="btn-step" class="card-control" type="button" title="Step preview" aria-label="Step preview frame">⏭</button>
-        <button data-role="btn-reset" class="card-control" type="button" title="Reset preview" aria-label="Reset preview">⟲</button>
-        <span class="card-header__divider" aria-hidden="true"></span>
-        <button class="card-control card-control--toggle is-active" type="button" data-panel-toggle="registry" aria-pressed="true" title="Toggle registry panel" aria-label="Toggle registry panel">🗂</button>
-        <button class="card-control card-control--toggle is-active" type="button" data-panel-toggle="log" aria-pressed="true" title="Toggle log panel" aria-label="Toggle log panel">📜</button>
-      </div>
-    </div>
-    <div class="card-image">
-      <div class="card-image__frame">
-        <canvas data-role="preview-canvas" width="256" height="256"></canvas>
-        <div class="row card-image__meta" style="justify-content:space-between;">
-          <div class="small muted">Frame: <span data-role="frame-info" class="mono"></span></div>
-          <div class="small muted">Size: <span data-role="size-info" class="mono"></span></div>
+    <div class="tcg-card__content">
+      <svg class="card-layout" viewBox="0 0 1000 1400" aria-hidden="true">
+        <rect data-region="header" x="40" y="40" width="920" height="130"></rect>
+        <rect data-region="section-gap" x="40" y="180" width="920" height="20"></rect>
+        <rect data-region="image" x="40" y="210" width="920" height="280"></rect>
+        <rect data-region="panels" x="40" y="520" width="920" height="720"></rect>
+        <rect data-region="footer" x="40" y="1260" width="920" height="90"></rect>
+      </svg>
+      <div class="card-header">
+        <div class="card-header__title">
+          <span data-role="card-title"></span>
+          <span data-role="play-mini" class="card-header__status">stopped</span>
+        </div>
+        <div class="card-header__badge card-header__controls">
+          <button data-role="btn-play" class="card-control" type="button" title="Play/Pause preview" aria-label="Play or pause preview" aria-pressed="false">▶</button>
+          <button data-role="btn-step" class="card-control" type="button" title="Step preview" aria-label="Step preview frame">⏭</button>
+          <button data-role="btn-reset" class="card-control" type="button" title="Reset preview" aria-label="Reset preview">⟲</button>
+          <span class="card-header__divider" aria-hidden="true"></span>
+          <button class="card-control card-control--toggle is-active" type="button" data-panel-toggle="registry" aria-pressed="true" title="Toggle registry panel" aria-label="Toggle registry panel">🗂</button>
+          <button class="card-control card-control--toggle is-active" type="button" data-panel-toggle="log" aria-pressed="true" title="Toggle log panel" aria-label="Toggle log panel">📜</button>
         </div>
       </div>
-    </div>
-    <div class="card-panels">
-      <div class="card-type">
-        <!-- TEMPLATE -->
-        <section class="panel">
-        <h2>
-          <span>Template Editor <span class="mini" data-role="tpl-root-mini"></span></span>
-          <span class="kbar">
-            <input data-role="file-template" type="file" accept=".json,application/json" />
-            <button data-role="btn-save-template">Save template.json</button>
-          </span>
-        </h2>
-        <div class="content" data-role="template-panel">
-          <div class="grid2">
-            <div class="field">
-              <label>tileW / tileH</label>
-              <div class="row">
-                <input data-role="tpl-tile-w" type="number" min="1" step="1" />
-                <input data-role="tpl-tile-h" type="number" min="1" step="1" />
-              </div>
-            </div>
-            <div class="field">
-              <label>gridW / gridH (output size = tileW×gridW by tileH×gridH)</label>
-              <div class="row">
-                <input data-role="tpl-grid-w" type="number" min="1" step="1" />
-                <input data-role="tpl-grid-h" type="number" min="1" step="1" />
-              </div>
-            </div>
+      <div class="card-image">
+        <div class="card-image__frame">
+          <canvas data-role="preview-canvas" width="256" height="256"></canvas>
+          <div class="row card-image__meta" style="justify-content:space-between;">
+            <div class="small muted">Frame: <span data-role="frame-info" class="mono"></span></div>
+            <div class="small muted">Size: <span data-role="size-info" class="mono"></span></div>
           </div>
+        </div>
+      </div>
+      <div class="card-panels">
+        <div class="card-type">
+          <!-- TEMPLATE -->
+          <section class="panel">
+          <h2>
+            <span>Template Editor <span class="mini" data-role="tpl-root-mini"></span></span>
+            <span class="kbar">
+              <input data-role="file-template" type="file" accept=".json,application/json" />
+              <button data-role="btn-save-template">Save template.json</button>
+            </span>
+          </h2>
+          <div class="content" data-role="template-panel">
+            <div class="grid2">
+              <div class="field">
+                <label>tileW / tileH</label>
+                <div class="row">
+                  <input data-role="tpl-tile-w" type="number" min="1" step="1" />
+                  <input data-role="tpl-tile-h" type="number" min="1" step="1" />
+                </div>
+              </div>
+              <div class="field">
+                <label>gridW / gridH (output size = tileW×gridW by tileH×gridH)</label>
+                <div class="row">
+                  <input data-role="tpl-grid-w" type="number" min="1" step="1" />
+                  <input data-role="tpl-grid-h" type="number" min="1" step="1" />
+                </div>
+              </div>
+            </div>
 
           <div class="hr"></div>
 
@@ -325,17 +326,18 @@ END README
       </section>
       </div>
     </div>
-    <div class="card-footer">
-      <div class="kbar">
-        <div class="toggle">
-          <label title="Recompute IDs from canonical node content and rewrite references.">
-            <input data-role="deterministic-ids" type="checkbox" checked />
-            Deterministic IDs
-          </label>
+      <div class="card-footer">
+        <div class="kbar">
+          <div class="toggle">
+            <label title="Recompute IDs from canonical node content and rewrite references.">
+              <input data-role="deterministic-ids" type="checkbox" checked />
+              Deterministic IDs
+            </label>
+          </div>
+          <button data-role="btn-rehash" class="primary" title="Recompute IDs topologically; rewrite references; clears caches.">Recompute IDs</button>
+          <button data-role="btn-popout" class="primary">Pop‑out Viewer</button>
+          <button data-role="btn-export-atlas" class="primary">Export Atlas PNG + JSON</button>
         </div>
-        <button data-role="btn-rehash" class="primary" title="Recompute IDs topologically; rewrite references; clears caches.">Recompute IDs</button>
-        <button data-role="btn-popout" class="primary">Pop‑out Viewer</button>
-        <button data-role="btn-export-atlas" class="primary">Export Atlas PNG + JSON</button>
       </div>
     </div>
   </div>
