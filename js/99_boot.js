@@ -15,7 +15,10 @@
     if (!card) return;
     const controls = card.querySelector(".card-header__controls");
     if (!controls) return;
+    const cardRect = card.getBoundingClientRect();
     const rect = controls.getBoundingClientRect();
+    rootStyle.setProperty("--card-right", `${cardRect.right}px`);
+    rootStyle.setProperty("--card-top", `${cardRect.top}px`);
     rootStyle.setProperty("--controls-right", `${rect.right}px`);
     rootStyle.setProperty("--controls-top", `${rect.top}px`);
     rootStyle.setProperty("--controls-height", `${rect.height}px`);

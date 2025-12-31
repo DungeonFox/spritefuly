@@ -183,8 +183,8 @@
   }
   .card-adjacent{
     position:fixed;
-    left:calc(var(--controls-right) + 8.4px);
-    top:calc(var(--controls-top) - 8.4px);
+    left:calc(var(--card-right) + 8.4px);
+    top:calc(var(--card-top) - 8.4px);
     padding:8.4px;
     display:flex;
     flex-direction:column;
