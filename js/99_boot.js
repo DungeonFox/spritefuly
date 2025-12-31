@@ -83,7 +83,7 @@
       if (name === "panels" && h){
         card.style.setProperty("--panels-h", `${h * scaleY}px`);
       }
-      if (name === "footer" && h){
+      if (name === "footer"){
         card.style.setProperty("--footer-h", `${h * scaleY}px`);
       }
     });
