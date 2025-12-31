@@ -88,13 +88,13 @@
     height:var(--content-h, 100%);
     display:grid;
     grid-template-rows:
-      clamp(12px, var(--header-h, 0px), 64px)
-      var(--section-gap, 16px)
-      clamp(48px, var(--image-h, 0px), 240px)
-      var(--section-gap, 16px)
-      clamp(64px, var(--panels-h, 0px), 280px)
-      var(--section-gap, 16px)
-      max(var(--footer-h, 0px), 28px);
+      var(--header-h)
+      clamp(calc(8px * var(--card-scale, 1)), var(--section-gap), calc(24px * var(--card-scale, 1)))
+      var(--image-h)
+      clamp(calc(8px * var(--card-scale, 1)), var(--section-gap), calc(24px * var(--card-scale, 1)))
+      var(--panels-h)
+      clamp(calc(8px * var(--card-scale, 1)), var(--section-gap), calc(24px * var(--card-scale, 1)))
+      var(--footer-h);
     align-content:start;
     overflow:hidden;
   }
