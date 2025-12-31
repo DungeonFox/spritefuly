@@ -55,7 +55,8 @@
     gap:8.4px;
   }
   .tcg-card{
-    width:min(1400px, 100%);
+    width:var(--card-w, min(1400px, 100%));
+    height:var(--card-h, auto);
     background:linear-gradient(145deg, #1a1310, #0b0d10 55%, #111824);
     border-radius:22px;
     border:1px solid rgba(212, 173, 82, 0.5);
