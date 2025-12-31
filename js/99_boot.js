@@ -9,7 +9,6 @@
   const MAX_CARD_ZOOM = 1.0;
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
-  const rootStyle = document.documentElement.style;
   const cardControlObservers = new WeakMap();
 
   function getScrollContainer(element){
@@ -29,12 +28,11 @@
     if (!card) return;
     const controls = card.querySelector(".card-header__controls");
     if (!controls) return;
+    const cardShell = card.closest(".card-shell") || card;
     const container = resolveCardContainer(card);
     const scrollContainer = getScrollContainer(card);
     const useViewport = scrollContainer === window;
-    if (container){
-      container.dataset.controlsPosition = useViewport ? "viewport" : "container";
-    }
+    cardShell.dataset.controlsPosition = useViewport ? "viewport" : "container";
     const cardRect = card.getBoundingClientRect();
     const rect = controls.getBoundingClientRect();
     const containerRect = container && !useViewport ? container.getBoundingClientRect() : {left: 0, top: 0};
@@ -42,7 +40,7 @@
     const containerScrollTop = container && !useViewport ? container.scrollTop : 0;
     const offsetX = useViewport ? 0 : containerRect.left - containerScrollLeft;
     const offsetY = useViewport ? 0 : containerRect.top - containerScrollTop;
-    const styleTarget = container ? container.style : rootStyle;
+    const styleTarget = cardShell.style;
     styleTarget.setProperty("--card-right", `${cardRect.right - offsetX}px`);
     styleTarget.setProperty("--card-top", `${cardRect.top - offsetY}px`);
     styleTarget.setProperty("--controls-right", `${rect.right - offsetX}px`);
