@@ -4,9 +4,9 @@
   ensureDefaults();
   const IDEAL_CARD_WIDTH = 1000;
   const IDEAL_CARD_HEIGHT = 1400;
-  const IDEAL_CARD_SCALE = 1.1;
-  const MIN_CARD_ZOOM = 0.85;
-  const MAX_CARD_ZOOM = 1.1;
+  const IDEAL_CARD_SCALE = 0.95;
+  const MIN_CARD_ZOOM = 0.75;
+  const MAX_CARD_ZOOM = 1.0;
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
   const rootStyle = document.documentElement.style;
