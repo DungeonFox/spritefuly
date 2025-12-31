@@ -40,32 +40,18 @@
     return cardRoot?.dataset?.cardId || "";
   }
 
-  function findRoleInPanels(role, cardId){
-    const panelScope = document.querySelector(".card-adjacent") || document;
-    const candidates = Array.from(panelScope.querySelectorAll(`[data-role="${role}"]`));
-    if (!candidates.length) return null;
-    if (!cardId) return candidates[0];
-    let fallback = null;
-    for (const candidate of candidates){
-      const panel = candidate.closest("[data-panel]") || candidate.closest("[data-card-id]");
-      if (!panel) continue;
-      if (panel.dataset.cardId === cardId) return candidate;
-      if (!panel.dataset.cardId && !fallback){
-        fallback = {candidate, panel};
-      }
-    }
-    if (fallback){
-      fallback.panel.dataset.cardId = cardId;
-      return fallback.candidate;
-    }
-    return candidates[0];
+  function findRoleInPanels(role, cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!root) return null;
+    const panelScope = root.querySelector(".card-adjacent");
+    if (!panelScope) return null;
+    return panelScope.querySelector(`[data-role="${role}"]`);
   }
 
   function resolveRoleElement(root, role){
     const local = root ? $role(root, role) : null;
     if (local) return local;
-    const cardId = getCardIdFromRoot(root);
-    return findRoleInPanels(role, cardId);
+    return findRoleInPanels(role, root);
   }
 
   // Default geometry for the pop‑out viewer. These values are used when opening a new
