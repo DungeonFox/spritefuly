@@ -73,6 +73,10 @@
     card.style.setProperty("--card-scale", scale);
     card.style.setProperty("--card-scale-x", scaleX);
     card.style.setProperty("--card-scale-y", scaleY);
+    const centerX = (viewBox.x + (viewBox.width / 2)) * scaleX;
+    const centerY = (viewBox.y + (viewBox.height / 2)) * scaleY;
+    card.style.setProperty("--card-center-x", `${centerX}px`);
+    card.style.setProperty("--card-center-y", `${centerY}px`);
     const regions = svg.querySelectorAll("[data-region]");
     regions.forEach((region) => {
       const name = region.dataset.region;
