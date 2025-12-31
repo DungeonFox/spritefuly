@@ -283,7 +283,7 @@
   // Keep merged JSON updated (lightweight)
   setInterval(() => {
     cardRoots.forEach((root) => {
-      const merged = $role(root, "merged-json");
+      const merged = (typeof resolveRoleElement === "function") ? resolveRoleElement(root, "merged-json") : $role(root, "merged-json");
       if (!merged) return;
       // If user is actively editing merged JSON, don't overwrite.
       const active = document.activeElement === merged;
