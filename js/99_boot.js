@@ -95,6 +95,8 @@
     card.style.setProperty("--card-scale", scale);
     card.style.setProperty("--card-scale-x", scaleX);
     card.style.setProperty("--card-scale-y", scaleY);
+    const content = card.querySelector(".tcg-card__content");
+    const layoutTarget = content || card;
     let headerInsetX = 0;
     let headerInsetY = 0;
     const regions = svg.querySelectorAll("[data-region]");
@@ -105,39 +107,39 @@
       const y = Number(region.getAttribute("y")) || 0;
       const w = Number(region.getAttribute("width")) || 0;
       const h = Number(region.getAttribute("height")) || 0;
-      card.style.setProperty(`--${name}-x`, `${x * scaleX}px`);
-      card.style.setProperty(`--${name}-y`, `${y * scaleY}px`);
-      card.style.setProperty(`--${name}-w`, `${w * scaleX}px`);
-      card.style.setProperty(`--${name}-h`, `${h * scaleY}px`);
+      layoutTarget.style.setProperty(`--${name}-x`, `${x * scaleX}px`);
+      layoutTarget.style.setProperty(`--${name}-y`, `${y * scaleY}px`);
+      layoutTarget.style.setProperty(`--${name}-w`, `${w * scaleX}px`);
+      layoutTarget.style.setProperty(`--${name}-h`, `${h * scaleY}px`);
       if (name === "section-gap" && h){
-        card.style.setProperty("--section-gap", `${h * scaleY}px`);
+        layoutTarget.style.setProperty("--section-gap", `${h * scaleY}px`);
       }
       if (name === "image" && h){
-        card.style.setProperty("--image-h", `${h * scaleY}px`);
+        layoutTarget.style.setProperty("--image-h", `${h * scaleY}px`);
       }
       if (name === "header" && h){
-        card.style.setProperty("--header-h", `${h * scaleY}px`);
+        layoutTarget.style.setProperty("--header-h", `${h * scaleY}px`);
         headerInsetX = x * scaleX;
         headerInsetY = y * scaleY;
       }
       if (name === "panels" && h){
-        card.style.setProperty("--panels-h", `${h * scaleY}px`);
+        layoutTarget.style.setProperty("--panels-h", `${h * scaleY}px`);
       }
       if (name === "footer"){
-        card.style.setProperty("--footer-x", `${x * scaleX}px`);
-        card.style.setProperty("--footer-y", `${y * scaleY}px`);
-        card.style.setProperty("--footer-w", `${w * scaleX}px`);
-        card.style.setProperty("--footer-h", `${h * scaleY}px`);
+        layoutTarget.style.setProperty("--footer-x", `${x * scaleX}px`);
+        layoutTarget.style.setProperty("--footer-y", `${y * scaleY}px`);
+        layoutTarget.style.setProperty("--footer-w", `${w * scaleX}px`);
+        layoutTarget.style.setProperty("--footer-h", `${h * scaleY}px`);
       }
     });
-    card.style.setProperty("--card-content-offset-x", `${headerInsetX}px`);
-    card.style.setProperty("--card-content-offset-y", `${headerInsetY}px`);
+    layoutTarget.style.setProperty("--card-content-offset-x", `${headerInsetX}px`);
+    layoutTarget.style.setProperty("--card-content-offset-y", `${headerInsetY}px`);
     const baseScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
-    card.style.setProperty("--card-padding", `${18 * baseScale}px`);
-    card.style.setProperty("--header-pad-x", `${14 * baseScale}px`);
-    card.style.setProperty("--header-pad-y", `${10 * baseScale}px`);
-    card.style.setProperty("--image-pad", `${10 * baseScale}px`);
-    card.style.setProperty("--image-gap", `${6 * baseScale}px`);
+    layoutTarget.style.setProperty("--card-padding", `${18 * baseScale}px`);
+    layoutTarget.style.setProperty("--header-pad-x", `${14 * baseScale}px`);
+    layoutTarget.style.setProperty("--header-pad-y", `${10 * baseScale}px`);
+    layoutTarget.style.setProperty("--image-pad", `${10 * baseScale}px`);
+    layoutTarget.style.setProperty("--image-gap", `${6 * baseScale}px`);
     updateControlsPosition(card);
   }
 
