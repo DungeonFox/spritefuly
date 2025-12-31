@@ -96,8 +96,11 @@
     const layoutCenterY = layoutBounds.y + layoutBounds.height / 2;
     const offsetX = (viewCenterX - layoutCenterX) * IDEAL_CARD_SCALE;
     const offsetY = (viewCenterY - layoutCenterY) * IDEAL_CARD_SCALE;
-    card.style.setProperty("--card-content-offset-x", `${offsetX}px`);
-    card.style.setProperty("--card-content-offset-y", `${offsetY}px`);
+    const scaledContentHeight = layoutBounds.height * IDEAL_CARD_SCALE * clampedZoom;
+    const contentOffsetY = (cardHeight - scaledContentHeight) / 2;
+    card.style.setProperty("--card-layout-offset-x", `${offsetX}px`);
+    card.style.setProperty("--card-layout-offset-y", `${offsetY}px`);
+    card.style.setProperty("--card-content-offset-y", `${contentOffsetY}px`);
     const scaleX = clampedZoom * (idealWidth / viewBox.width);
     const scaleY = clampedZoom * (idealHeight / viewBox.height);
     const scale = Math.min(scaleX, scaleY);
