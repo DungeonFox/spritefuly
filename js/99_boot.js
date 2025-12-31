@@ -36,23 +36,41 @@
     return null;
   }
 
+  function getRegionBounds(region){
+    if (!region) return null;
+    const tag = region.tagName ? region.tagName.toLowerCase() : "";
+    if (tag === "path"){
+      const bounds = region.getBBox();
+      if (!bounds) return null;
+      return {x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height};
+    }
+    const x = Number(region.getAttribute("x"));
+    const y = Number(region.getAttribute("y"));
+    const w = Number(region.getAttribute("width"));
+    const h = Number(region.getAttribute("height"));
+    if (![x, y, w, h].every((value) => Number.isFinite(value))) return null;
+    return {x, y, width: w, height: h};
+  }
+
   function getLayoutBounds(svg, viewBox){
     if (!svg) return viewBox;
+    const safeRegion = svg.querySelector('[data-region="safe"]');
+    if (safeRegion){
+      const safeBounds = getRegionBounds(safeRegion);
+      if (safeBounds) return safeBounds;
+    }
     const regions = Array.from(svg.querySelectorAll("[data-region]"));
     let minX = Number.POSITIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
     let maxY = Number.NEGATIVE_INFINITY;
     regions.forEach((region) => {
-      const x = Number(region.getAttribute("x"));
-      const y = Number(region.getAttribute("y"));
-      const w = Number(region.getAttribute("width"));
-      const h = Number(region.getAttribute("height"));
-      if (![x, y, w, h].every((value) => Number.isFinite(value))) return;
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x + w);
-      maxY = Math.max(maxY, y + h);
+      const bounds = getRegionBounds(region);
+      if (!bounds) return;
+      minX = Math.min(minX, bounds.x);
+      minY = Math.min(minY, bounds.y);
+      maxX = Math.max(maxX, bounds.x + bounds.width);
+      maxY = Math.max(maxY, bounds.y + bounds.height);
     });
     if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)){
       return viewBox;
@@ -110,14 +128,22 @@
     layoutTarget.style.setProperty("--layout-y", `${layoutY}px`);
     layoutTarget.style.setProperty("--layout-w", `${layoutW}px`);
     layoutTarget.style.setProperty("--layout-h", `${layoutH}px`);
+    const content = card.querySelector(".tcg-card__content");
+    if (content){
+      content.style.setProperty("--layout-w", `${layoutW}px`);
+      content.style.setProperty("--layout-h", `${layoutH}px`);
+      content.style.width = `${layoutW}px`;
+      content.style.height = `${layoutH}px`;
+    }
     const regions = svg.querySelectorAll("[data-region]");
     regions.forEach((region) => {
       const name = region.dataset.region;
       if (!name) return;
-      const x = Number(region.getAttribute("x")) || 0;
-      const y = Number(region.getAttribute("y")) || 0;
-      const w = Number(region.getAttribute("width")) || 0;
-      const h = Number(region.getAttribute("height")) || 0;
+      const bounds = getRegionBounds(region) || {x: 0, y: 0, width: 0, height: 0};
+      const x = bounds.x;
+      const y = bounds.y;
+      const w = bounds.width;
+      const h = bounds.height;
       layoutTarget.style.setProperty(`--${name}-x`, `${x * scaleX}px`);
       layoutTarget.style.setProperty(`--${name}-y`, `${y * scaleY}px`);
       layoutTarget.style.setProperty(`--${name}-w`, `${w * scaleX}px`);
