@@ -29,11 +29,27 @@
 
   function getCardRootByElement(el){
     if (!el || typeof el.closest !== "function") return null;
-    return el.closest(".card-shell");
+    const shell = el.closest(".card-shell");
+    if (shell) return shell;
+    const cardHost = el.closest("[data-card-id]");
+    if (cardHost){
+      const cardId = cardHost.dataset?.cardId;
+      return getCardRoot(cardId);
+    }
+    return null;
   }
 
   function resolveCardRoot(cardRoot){
-    return cardRoot || getCardRootByElement(document.activeElement) || getCardRoot();
+    if (!cardRoot){
+      return getCardRootByElement(document.activeElement) || getCardRoot();
+    }
+    if (typeof cardRoot === "string"){
+      return getCardRoot(cardRoot) || getCardRoot();
+    }
+    if (cardRoot.classList && cardRoot.classList.contains("card-shell")){
+      return cardRoot;
+    }
+    return getCardRootByElement(cardRoot) || cardRoot;
   }
 
   function getCardIdFromRoot(cardRoot){
