@@ -2,6 +2,21 @@
   // Boot
   // ---------------------------
   ensureDefaults();
+  const cardTemplate = document.getElementById("card-template");
+  if (cardTemplate && cardTemplate.content && !cardTemplate.content.children.length){
+    const seedCard = document.querySelector(".card-shell");
+    if (seedCard){
+      const templateCard = seedCard.cloneNode(true);
+      templateCard.dataset.cardId = "";
+      const title = templateCard.querySelector('[data-role="card-title"]');
+      if (title) title.textContent = "";
+      const panelHosts = templateCard.querySelectorAll(".card-adjacent, .card-adjacent [data-panel]");
+      panelHosts.forEach((panelHost) => {
+        panelHost.dataset.cardId = "";
+      });
+      cardTemplate.content.appendChild(templateCard);
+    }
+  }
   const IDEAL_CARD_WIDTH = 1000;
   const IDEAL_CARD_HEIGHT = 1400;
   const IDEAL_CARD_SCALE = 0.85;
@@ -230,6 +245,80 @@
     }
   }
 
+  function updateCardIdentity(root, cardId){
+    if (!root) return;
+    const safeId = cardId || root.dataset.cardId || "";
+    root.dataset.cardId = safeId;
+    const title = $role(root, "card-title");
+    if (title) title.textContent = `Sprite Editor Deck · ${safeId}`;
+    const panelHosts = root.querySelectorAll(".card-adjacent, .card-adjacent [data-panel]");
+    panelHosts.forEach((panelHost) => {
+      panelHost.dataset.cardId = safeId;
+    });
+  }
+
+  function getExistingCardIds(){
+    return new Set(cardRoots.map((root) => root.dataset.cardId).filter(Boolean));
+  }
+
+  function createUniqueCardId(){
+    const baseId = (typeof getOrCreateCardId === "function") ? getOrCreateCardId() : "";
+    const fallbackBase = baseId || "card";
+    const existing = getExistingCardIds();
+    if (!existing.has(fallbackBase)) return fallbackBase;
+    let index = 1;
+    let candidate = `${fallbackBase}-${index}`;
+    while (existing.has(candidate)){
+      index += 1;
+      candidate = `${fallbackBase}-${index}`;
+    }
+    return candidate;
+  }
+
+  function cloneCardTemplate(){
+    const template = document.getElementById("card-template");
+    if (template && template.content){
+      const fragment = template.content.cloneNode(true);
+      const root = fragment.querySelector(".card-shell");
+      return {fragment, root};
+    }
+    const fallback = document.querySelector('.card-shell[data-card-template="true"]');
+    if (fallback){
+      const root = fallback.cloneNode(true);
+      return {fragment: root, root};
+    }
+    return {fragment: null, root: null};
+  }
+
+  function initCardRoot(root){
+    if (!root) return;
+    initCardLayout(root);
+    refreshAllUI(root);
+    renderOnce(root);
+    initViewerGeometry(root);
+    if (typeof initCoreEvents === "function"){
+      initCoreEvents(root);
+    }
+    if (typeof initTemplateEvents === "function"){
+      initTemplateEvents(root);
+    }
+    if (typeof initRectEvents === "function"){
+      initRectEvents(root);
+    }
+    if (typeof initFrameEvents === "function"){
+      initFrameEvents(root);
+    }
+    if (typeof initAssetEvents === "function"){
+      initAssetEvents(root);
+    }
+    if (typeof initLayerEvents === "function"){
+      initLayerEvents(root);
+    }
+    if (typeof initTaskEvents === "function"){
+      initTaskEvents(root);
+    }
+  }
+
   (function initCardIdentity(){
     const fallbackId = (typeof getOrCreateCardId === "function") ? getOrCreateCardId() : "";
     cardRoots.forEach((root, index) => {
@@ -243,13 +332,7 @@
           cardId = `card-${index + 1}`;
         }
       }
-      root.dataset.cardId = cardId;
-      const title = $role(root, "card-title");
-      if (title) title.textContent = `Sprite Editor Deck · ${cardId}`;
-      const panelHosts = root.querySelectorAll(".card-adjacent, .card-adjacent [data-panel]");
-      panelHosts.forEach((panelHost) => {
-        panelHost.dataset.cardId = cardId;
-      });
+      updateCardIdentity(root, cardId);
     });
   })();
 
@@ -376,20 +459,40 @@
   }, 1200);
 
   // Toggle supplemental panels beside the card.
-  (function initSupplementalPanels(){
-    cardRoots.forEach((root) => {
-      const toggles = root.querySelectorAll("[data-panel-toggle]");
-      if (!toggles.length) return;
-      toggles.forEach((toggle) => {
-        const target = toggle.getAttribute("data-panel-toggle");
-        const panelScope = root.querySelector(".card-adjacent") || root;
-        const panel = panelScope.querySelector(`[data-panel="${target}"]`);
-        if (!panel) return;
-        toggle.addEventListener("click", () => {
-          const hidden = panel.classList.toggle("is-hidden");
-          toggle.classList.toggle("is-active", !hidden);
-          toggle.setAttribute("aria-pressed", hidden ? "false" : "true");
-        });
+  function initSupplementalPanelsForCard(root){
+    if (!root) return;
+    const toggles = root.querySelectorAll("[data-panel-toggle]");
+    if (!toggles.length) return;
+    toggles.forEach((toggle) => {
+      const target = toggle.getAttribute("data-panel-toggle");
+      const panelScope = root.querySelector(".card-adjacent") || root;
+      const panel = panelScope.querySelector(`[data-panel="${target}"]`);
+      if (!panel) return;
+      toggle.addEventListener("click", () => {
+        const hidden = panel.classList.toggle("is-hidden");
+        toggle.classList.toggle("is-active", !hidden);
+        toggle.setAttribute("aria-pressed", hidden ? "false" : "true");
       });
     });
+  }
+
+  (function initSupplementalPanels(){
+    cardRoots.forEach((root) => initSupplementalPanelsForCard(root));
   })();
+
+  const newCardButton = document.querySelector('[data-role="btn-new-card"]');
+  if (newCardButton){
+    newCardButton.addEventListener("click", () => {
+      const container = document.querySelector(".card-container");
+      if (!container) return;
+      const {fragment, root} = cloneCardTemplate();
+      if (!fragment || !root) return;
+      const cardId = createUniqueCardId();
+      updateCardIdentity(root, cardId);
+      cardRoots.push(root);
+      container.appendChild(fragment);
+      initCardRoot(root);
+      initSupplementalPanelsForCard(root);
+      updateAllCardLayouts();
+    });
+  }
