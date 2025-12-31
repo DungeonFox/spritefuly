@@ -38,21 +38,39 @@
 
   function getLayoutBounds(svg, viewBox){
     if (!svg) return viewBox;
+    const getRegionBounds = (region) => {
+      if (!region) return null;
+      const tag = region.tagName ? region.tagName.toLowerCase() : "";
+      if (tag === "rect"){
+        const x = Number(region.getAttribute("x"));
+        const y = Number(region.getAttribute("y"));
+        const w = Number(region.getAttribute("width"));
+        const h = Number(region.getAttribute("height"));
+        if (![x, y, w, h].every((value) => Number.isFinite(value))) return null;
+        return {x, y, width: w, height: h};
+      }
+      if (typeof region.getBBox === "function"){
+        const box = region.getBBox();
+        if (![box.x, box.y, box.width, box.height].every((value) => Number.isFinite(value))) return null;
+        return {x: box.x, y: box.y, width: box.width, height: box.height};
+      }
+      return null;
+    };
+    const safeRegion = svg.querySelector('[data-region="safe"]');
+    const safeBounds = getRegionBounds(safeRegion);
+    if (safeBounds) return safeBounds;
     const regions = Array.from(svg.querySelectorAll("[data-region]"));
     let minX = Number.POSITIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
     let maxY = Number.NEGATIVE_INFINITY;
     regions.forEach((region) => {
-      const x = Number(region.getAttribute("x"));
-      const y = Number(region.getAttribute("y"));
-      const w = Number(region.getAttribute("width"));
-      const h = Number(region.getAttribute("height"));
-      if (![x, y, w, h].every((value) => Number.isFinite(value))) return;
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x + w);
-      maxY = Math.max(maxY, y + h);
+      const bounds = getRegionBounds(region);
+      if (!bounds) return;
+      minX = Math.min(minX, bounds.x);
+      minY = Math.min(minY, bounds.y);
+      maxX = Math.max(maxX, bounds.x + bounds.width);
+      maxY = Math.max(maxY, bounds.y + bounds.height);
     });
     if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)){
       return viewBox;
@@ -110,6 +128,11 @@
     layoutTarget.style.setProperty("--layout-y", `${layoutY}px`);
     layoutTarget.style.setProperty("--layout-w", `${layoutW}px`);
     layoutTarget.style.setProperty("--layout-h", `${layoutH}px`);
+    const content = card.querySelector(".tcg-card__content");
+    if (content){
+      content.style.width = `${layoutW}px`;
+      content.style.height = `${layoutH}px`;
+    }
     const regions = svg.querySelectorAll("[data-region]");
     regions.forEach((region) => {
       const name = region.dataset.region;
