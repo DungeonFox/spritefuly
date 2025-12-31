@@ -150,14 +150,16 @@
     const layoutY = layoutBounds ? layoutBounds.y * scaleY : 0;
     const layoutW = layoutBounds ? layoutBounds.width * scaleX : idealWidth * clampedZoom;
     const layoutH = layoutBounds ? layoutBounds.height * scaleY : idealHeight * clampedZoom;
+    layoutTarget.style.width = `${layoutW}px`;
+    layoutTarget.style.height = `${layoutH}px`;
     layoutTarget.style.setProperty("--layout-x", `${layoutX}px`);
     layoutTarget.style.setProperty("--layout-y", `${layoutY}px`);
     layoutTarget.style.setProperty("--layout-w", `${layoutW}px`);
     layoutTarget.style.setProperty("--layout-h", `${layoutH}px`);
+    layoutTarget.style.setProperty("--content-h", `${layoutH}px`);
     const content = card.querySelector(".tcg-card__content");
     if (content){
       content.style.width = `${layoutW}px`;
-      content.style.height = `${layoutH}px`;
     }
     const regions = svg.querySelectorAll("[data-region]");
     regions.forEach((region) => {
