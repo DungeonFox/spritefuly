@@ -54,6 +54,12 @@
     justify-content:center;
     gap:8.4px;
   }
+  .card-anchored{
+    position:relative;
+    display:inline-flex;
+    align-items:flex-start;
+    justify-content:center;
+  }
   .tcg-card{
     width:calc(var(--card-ideal-w, 1000px) * var(--card-zoom, 1));
     height:calc(var(--card-ideal-h, 1400px) * var(--card-zoom, 1));
@@ -182,10 +188,14 @@
     box-shadow:0 0 0 1px rgba(255, 232, 168, 0.45);
   }
   .card-adjacent{
+    position:absolute;
+    top:calc(var(--controls-y) + 8.4px);
+    left:calc(var(--controls-x) + 8.4px + var(--controls-w));
+    padding:8.4px;
     display:flex;
     flex-direction:column;
     gap:10px;
-    flex:0 0 320px;
+    width:320px;
     max-width:100%;
   }
   .side-panel{
