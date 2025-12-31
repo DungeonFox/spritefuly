@@ -62,7 +62,8 @@
     border:1px solid rgba(212, 173, 82, 0.5);
     box-shadow:0 18px 40px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.05);
     position:relative;
-    padding:var(--card-padding, 18px);
+    padding:0;
+    overflow:hidden;
     display:grid;
     grid-template-rows:
       max(var(--header-h, 0px), 32px)
@@ -88,11 +89,15 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:var(--header-pad-y, 10px) var(--header-pad-x, 14px);
+    padding:var(--header-pad-y, 10px)
+      calc(var(--header-pad-x, 14px) + var(--header-x, 0px));
+    padding-right:calc(var(--header-pad-x, 14px) + (100% - var(--header-w, 100%) - var(--header-x, 0px)));
     border-radius:14px;
     background:linear-gradient(90deg, rgba(255,212,123,0.18), rgba(128,84,31,0.35));
     border:1px solid rgba(212, 173, 82, 0.6);
     box-shadow:inset 0 0 12px rgba(255, 232, 168, 0.18);
+    max-width:100%;
+    min-width:0;
   }
   .card-header__title{
     font-weight:700;
@@ -175,10 +180,14 @@
     grid-row:3;
     height:max(var(--image-h, 0px), 120px);
     padding:var(--image-pad, 10px);
+    padding-left:calc(var(--image-pad, 10px) + var(--image-x, 0px));
+    padding-right:calc(var(--image-pad, 10px) + (100% - var(--image-w, 100%) - var(--image-x, 0px)));
     border-radius:16px;
     background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.3));
     border:1px solid rgba(212, 173, 82, 0.35);
     box-shadow:inset 0 0 20px rgba(0,0,0,0.45);
+    max-width:100%;
+    min-width:0;
   }
   .card-image__frame{
     height:calc(100% - (var(--image-pad, 10px) + var(--image-pad, 10px)));
@@ -210,6 +219,10 @@
     flex-direction:column;
     gap:var(--section-gap, 16px);
     min-height:0;
+    padding-left:var(--panels-x, 0px);
+    padding-right:calc(100% - var(--panels-w, 100%) - var(--panels-x, 0px));
+    max-width:100%;
+    min-width:0;
   }
   .card-type,
   .card-text,
@@ -225,6 +238,8 @@
     border-radius:0;
     background:transparent;
     box-shadow:none;
+    max-width:100%;
+    min-width:0;
   }
   .card-text__body{
     font-size:12px;
@@ -254,9 +269,13 @@
     justify-content:center;
     align-items:center;
     padding:8px 12px;
+    padding-left:calc(12px + var(--footer-x, 0px));
+    padding-right:calc(12px + (100% - var(--footer-w, 100%) - var(--footer-x, 0px)));
     border-top:1px solid rgba(212, 173, 82, 0.35);
     border-radius:12px;
     background:rgba(12, 14, 18, 0.75);
+    max-width:100%;
+    min-width:0;
   }
   .card-footer .kbar{
     width:100%;
