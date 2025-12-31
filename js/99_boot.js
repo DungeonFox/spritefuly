@@ -36,6 +36,30 @@
     return null;
   }
 
+  function getLayoutBounds(svg, viewBox){
+    if (!svg) return viewBox;
+    const regions = Array.from(svg.querySelectorAll("[data-region]"));
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+    regions.forEach((region) => {
+      const x = Number(region.getAttribute("x"));
+      const y = Number(region.getAttribute("y"));
+      const w = Number(region.getAttribute("width"));
+      const h = Number(region.getAttribute("height"));
+      if (![x, y, w, h].every((value) => Number.isFinite(value))) return;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + w);
+      maxY = Math.max(maxY, y + h);
+    });
+    if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)){
+      return viewBox;
+    }
+    return {x: minX, y: minY, width: maxX - minX, height: maxY - minY};
+  }
+
   function updateCardLayout(card){
     if (!card) return;
     const svg = card.querySelector(".card-layout");
@@ -65,8 +89,15 @@
     card.style.setProperty("--card-ideal-w", `${idealWidth}px`);
     card.style.setProperty("--card-ideal-h", `${idealHeight}px`);
     card.style.setProperty("--card-zoom", clampedZoom);
-    card.style.setProperty("--card-content-offset-x", "0px");
-    card.style.setProperty("--card-content-offset-y", "0px");
+    const layoutBounds = getLayoutBounds(svg, viewBox);
+    const viewCenterX = viewBox.x + viewBox.width / 2;
+    const viewCenterY = viewBox.y + viewBox.height / 2;
+    const layoutCenterX = layoutBounds.x + layoutBounds.width / 2;
+    const layoutCenterY = layoutBounds.y + layoutBounds.height / 2;
+    const offsetX = (viewCenterX - layoutCenterX) * IDEAL_CARD_SCALE;
+    const offsetY = (viewCenterY - layoutCenterY) * IDEAL_CARD_SCALE;
+    card.style.setProperty("--card-content-offset-x", `${offsetX}px`);
+    card.style.setProperty("--card-content-offset-y", `${offsetY}px`);
     const scaleX = clampedZoom * (idealWidth / viewBox.width);
     const scaleY = clampedZoom * (idealHeight / viewBox.height);
     const scale = Math.min(scaleX, scaleY);
