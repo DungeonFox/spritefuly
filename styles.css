@@ -89,11 +89,9 @@
     display:grid;
     grid-template-rows:
       var(--header-h)
-      clamp(calc(8px * var(--card-scale, 1)), var(--section-gap), calc(24px * var(--card-scale, 1)))
+      var(--section-gap)
       var(--image-h)
-      clamp(calc(8px * var(--card-scale, 1)), var(--section-gap), calc(24px * var(--card-scale, 1)))
       var(--panels-h)
-      clamp(calc(8px * var(--card-scale, 1)), var(--section-gap), calc(24px * var(--card-scale, 1)))
       var(--footer-h);
     align-content:start;
     overflow:hidden;
@@ -108,7 +106,7 @@
   }
   .card-header{
     grid-row:1;
-    height:clamp(12px, var(--header-h, 0px), 64px);
+    height: max(12px, var(--header-h, 0px));
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -208,7 +206,7 @@
   }
   .card-image{
     grid-row:3;
-    height:clamp(48px, var(--image-h, 0px), 240px);
+    height: max(48px, var(--image-h, 0px));
     padding:var(--image-pad, 10px);
     padding-left:calc(var(--image-pad, 10px) + var(--image-x, 0px));
     padding-right:calc(var(--image-pad, 10px) + (100% - var(--image-w, 100%) - var(--image-x, 0px)));
@@ -243,8 +241,8 @@
     font-size:11px;
   }
   .card-panels{
-    grid-row:5;
-    height:clamp(64px, var(--panels-h, 0px), 280px);
+    grid-row:4;
+    height: max(64px, var(--panels-h, 0px));
     display:flex;
     flex-direction:column;
     gap:var(--section-gap, 16px);
@@ -261,7 +259,6 @@
     flex-direction:column;
     gap:10px;
     flex:1 1 0;
-    height:clamp(64px, var(--panels-h, 0px), 280px);
     min-height:calc((var(--panels-h, 0px) - (var(--section-gap, 16px) + var(--section-gap, 16px))) / 3);
     padding:0;
     border:none;
@@ -293,7 +290,7 @@
     letter-spacing:0.4px;
   }
   .card-footer{
-    grid-row:7 / 8;
+    grid-row:5 / 6;
     height:max(var(--footer-h, 0px), 28px);
     display:flex;
     justify-content:center;
