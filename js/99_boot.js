@@ -9,6 +9,17 @@
   const MAX_CARD_ZOOM = 1.1;
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
+  const rootStyle = document.documentElement.style;
+
+  function updateControlsPosition(card){
+    if (!card) return;
+    const controls = card.querySelector(".card-header__controls");
+    if (!controls) return;
+    const rect = controls.getBoundingClientRect();
+    rootStyle.setProperty("--controls-right", `${rect.right}px`);
+    rootStyle.setProperty("--controls-top", `${rect.top}px`);
+    rootStyle.setProperty("--controls-height", `${rect.height}px`);
+  }
 
   function getViewBoxDimensions(svg){
     if (svg && svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width){
@@ -96,6 +107,7 @@
     card.style.setProperty("--header-pad-y", `${10 * baseScale}px`);
     card.style.setProperty("--image-pad", `${10 * baseScale}px`);
     card.style.setProperty("--image-gap", `${6 * baseScale}px`);
+    updateControlsPosition(card);
   }
 
   function initCardLayout(root){
