@@ -22,7 +22,7 @@
   const IDEAL_CARD_SCALE = 0.85;
   const MIN_CARD_ZOOM = 0.7;
   const MAX_CARD_ZOOM = 1.0;
-  const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
+  const getCardRoots = () => Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
   const cardControlObservers = new WeakMap();
 
@@ -258,7 +258,7 @@
   }
 
   function getExistingCardIds(){
-    return new Set(cardRoots.map((root) => root.dataset.cardId).filter(Boolean));
+    return new Set(getCardRoots().map((root) => root.dataset.cardId).filter(Boolean));
   }
 
   function createUniqueCardId(){
@@ -290,12 +290,12 @@
     return {fragment: null, root: null};
   }
 
-  function initCardRoot(root){
+  function initCard(root){
     if (!root) return;
     initCardLayout(root);
+    initViewerGeometry(root);
     refreshAllUI(root);
     renderOnce(root);
-    initViewerGeometry(root);
     if (typeof initCoreEvents === "function"){
       initCoreEvents(root);
     }
@@ -317,11 +317,13 @@
     if (typeof initTaskEvents === "function"){
       initTaskEvents(root);
     }
+    pushStateToPopout(false, root);
+    initSupplementalPanelsForCard(root);
   }
 
   (function initCardIdentity(){
     const fallbackId = (typeof getOrCreateCardId === "function") ? getOrCreateCardId() : "";
-    cardRoots.forEach((root, index) => {
+    getCardRoots().forEach((root, index) => {
       let cardId = root.dataset.cardId;
       if (!cardId){
         if (index === 0 && fallbackId){
@@ -336,10 +338,8 @@
     });
   })();
 
-  cardRoots.forEach((root) => initCardLayout(root));
-
   const updateAllCardLayouts = () => {
-    cardRoots.forEach((root) => {
+    getCardRoots().forEach((root) => {
       const card = root.querySelector(".tcg-card");
       if (!card) return;
       updateCardLayout(card);
@@ -348,10 +348,7 @@
 
   window.addEventListener("resize", updateAllCardLayouts);
 
-  cardRoots.forEach((root) => {
-    refreshAllUI(root);
-    renderOnce(root);
-  });
+  getCardRoots().forEach((root) => initCard(root));
 
   // Initialise geometry controls with current defaults and set up apply handler
   function initViewerGeometry(root){
@@ -418,33 +415,9 @@
     }
   }
 
-  cardRoots.forEach((root) => initViewerGeometry(root));
-
-  if (typeof initCoreEvents === "function"){
-    cardRoots.forEach((root) => initCoreEvents(root));
-  }
-  if (typeof initTemplateEvents === "function"){
-    cardRoots.forEach((root) => initTemplateEvents(root));
-  }
-  if (typeof initRectEvents === "function"){
-    cardRoots.forEach((root) => initRectEvents(root));
-  }
-  if (typeof initFrameEvents === "function"){
-    cardRoots.forEach((root) => initFrameEvents(root));
-  }
-  if (typeof initAssetEvents === "function"){
-    cardRoots.forEach((root) => initAssetEvents(root));
-  }
-  if (typeof initLayerEvents === "function"){
-    cardRoots.forEach((root) => initLayerEvents(root));
-  }
-  if (typeof initTaskEvents === "function"){
-    cardRoots.forEach((root) => initTaskEvents(root));
-  }
-
   // Keep merged JSON updated (lightweight)
   setInterval(() => {
-    cardRoots.forEach((root) => {
+    getCardRoots().forEach((root) => {
       const merged = (typeof resolveRoleElement === "function") ? resolveRoleElement(root, "merged-json") : $role(root, "merged-json");
       if (!merged) return;
       // If user is actively editing merged JSON, don't overwrite.
@@ -455,7 +428,7 @@
 
   // Push initial viewer state if open
   setInterval(() => {
-    cardRoots.forEach((root) => pushStateToPopout(false, root));
+    getCardRoots().forEach((root) => pushStateToPopout(false, root));
   }, 1200);
 
   // Toggle supplemental panels beside the card.
@@ -476,10 +449,6 @@
     });
   }
 
-  (function initSupplementalPanels(){
-    cardRoots.forEach((root) => initSupplementalPanelsForCard(root));
-  })();
-
   const newCardButton = document.querySelector('[data-role="btn-new-card"]');
   if (newCardButton){
     newCardButton.addEventListener("click", () => {
@@ -489,10 +458,8 @@
       if (!fragment || !root) return;
       const cardId = createUniqueCardId();
       updateCardIdentity(root, cardId);
-      cardRoots.push(root);
       container.appendChild(fragment);
-      initCardRoot(root);
-      initSupplementalPanelsForCard(root);
+      initCard(root);
       updateAllCardLayouts();
     });
   }
