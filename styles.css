@@ -85,7 +85,7 @@
   .tcg-card__content{
     position:relative;
     width:100%;
-    height:100%;
+    height:var(--content-h, 100%);
     display:grid;
     grid-template-rows:
       clamp(12px, var(--header-h, 0px), 64px)
@@ -96,6 +96,7 @@
       var(--section-gap, 16px)
       max(var(--footer-h, 0px), 28px);
     align-content:start;
+    overflow:hidden;
   }
   .card-layout{
     position:absolute;
