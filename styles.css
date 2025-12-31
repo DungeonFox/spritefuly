@@ -80,6 +80,7 @@
     top:var(--layout-y, 0px);
     width:var(--layout-w, 100%);
     height:var(--layout-h, 100%);
+    overflow:hidden;
   }
   .tcg-card__content{
     position:relative;
