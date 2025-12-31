@@ -60,13 +60,38 @@
     return {x: minX, y: minY, width: maxX - minX, height: maxY - minY};
   }
 
+  function getBorderBounds(svg){
+    if (!svg) return null;
+    const borderElement = svg.querySelector(
+      '[data-region="border"], [data-border="true"], .card-border, .card-frame'
+    );
+    if (!borderElement) return null;
+    if (borderElement.tagName && borderElement.tagName.toLowerCase() === "rect"){
+      const x = Number(borderElement.getAttribute("x"));
+      const y = Number(borderElement.getAttribute("y"));
+      const width = Number(borderElement.getAttribute("width"));
+      const height = Number(borderElement.getAttribute("height"));
+      if ([x, y, width, height].every((value) => Number.isFinite(value))){
+        return {x, y, width, height};
+      }
+    }
+    if (typeof borderElement.getBBox === "function"){
+      const box = borderElement.getBBox();
+      if (box && [box.x, box.y, box.width, box.height].every((value) => Number.isFinite(value))){
+        return {x: box.x, y: box.y, width: box.width, height: box.height};
+      }
+    }
+    return null;
+  }
+
   function updateCardLayout(card){
     if (!card) return;
     const svg = card.querySelector(".card-layout");
     if (!svg) return;
     const viewBox = getViewBoxDimensions(svg);
     if (!viewBox || !viewBox.width || !viewBox.height) return;
-    const layoutBounds = getLayoutBounds(svg, viewBox);
+    const borderBounds = getBorderBounds(svg);
+    const layoutBounds = borderBounds || getLayoutBounds(svg, viewBox);
     const baseWidth = viewBox.width || IDEAL_CARD_WIDTH;
     const baseHeight = viewBox.height || IDEAL_CARD_HEIGHT;
     const idealWidth = baseWidth * IDEAL_CARD_SCALE;
