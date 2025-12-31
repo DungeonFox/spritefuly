@@ -64,6 +64,15 @@
     position:relative;
     padding:0;
     overflow:hidden;
+  }
+  .tcg-card__content{
+    position:absolute;
+    top:var(--card-content-offset-y, 0px);
+    left:var(--card-content-offset-x, 0px);
+    width:var(--card-ideal-w, 1000px);
+    height:var(--card-ideal-h, 1400px);
+    transform:scale(var(--card-zoom, 1));
+    transform-origin:top left;
     display:grid;
     grid-template-rows:
       max(var(--header-h, 0px), 32px)

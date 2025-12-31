@@ -2,6 +2,10 @@
   // Boot
   // ---------------------------
   ensureDefaults();
+  const IDEAL_CARD_WIDTH = 1000;
+  const IDEAL_CARD_HEIGHT = 1400;
+  const MIN_CARD_ZOOM = 0.7;
+  const MAX_CARD_ZOOM = 1.1;
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
 
@@ -24,20 +28,32 @@
     const viewBox = getViewBoxDimensions(svg);
     if (!viewBox || !viewBox.width || !viewBox.height) return;
     const rect = card.getBoundingClientRect();
-    const viewportWidth = window.innerWidth || rect.width;
-    const viewportHeight = window.innerHeight || rect.height;
+    const viewportWidth = window.innerWidth || rect.width || IDEAL_CARD_WIDTH;
+    const viewportHeight = window.innerHeight || rect.height || IDEAL_CARD_HEIGHT;
     const viewportScale = Math.min(
-      viewportWidth / viewBox.width,
-      viewportHeight / viewBox.height
+      viewportWidth / IDEAL_CARD_WIDTH,
+      viewportHeight / IDEAL_CARD_HEIGHT
     );
     const safeViewportScale = Number.isFinite(viewportScale) && viewportScale > 0 ? viewportScale : 1;
-    const cardWidth = viewBox.width * safeViewportScale;
-    const cardHeight = viewBox.height * safeViewportScale;
+    const cardWidth = IDEAL_CARD_WIDTH * safeViewportScale;
+    const cardHeight = IDEAL_CARD_HEIGHT * safeViewportScale;
+    const unclampedZoom = Math.min(cardWidth / IDEAL_CARD_WIDTH, cardHeight / IDEAL_CARD_HEIGHT);
+    const safeZoom = Number.isFinite(unclampedZoom) && unclampedZoom > 0 ? unclampedZoom : 1;
+    const clampedZoom = Math.min(Math.max(safeZoom, MIN_CARD_ZOOM), MAX_CARD_ZOOM);
+    const scaledWidth = IDEAL_CARD_WIDTH * clampedZoom;
+    const scaledHeight = IDEAL_CARD_HEIGHT * clampedZoom;
+    const offsetX = Math.max(0, (cardWidth - scaledWidth) / 2);
+    const offsetY = Math.max(0, (cardHeight - scaledHeight) / 2);
     card.style.setProperty("--visual-grid-unit", safeViewportScale);
     card.style.setProperty("--card-w", `${cardWidth}px`);
     card.style.setProperty("--card-h", `${cardHeight}px`);
-    const scaleX = cardWidth / viewBox.width;
-    const scaleY = cardHeight / viewBox.height;
+    card.style.setProperty("--card-ideal-w", `${IDEAL_CARD_WIDTH}px`);
+    card.style.setProperty("--card-ideal-h", `${IDEAL_CARD_HEIGHT}px`);
+    card.style.setProperty("--card-zoom", clampedZoom);
+    card.style.setProperty("--card-content-offset-x", `${offsetX}px`);
+    card.style.setProperty("--card-content-offset-y", `${offsetY}px`);
+    const scaleX = clampedZoom * (IDEAL_CARD_WIDTH / viewBox.width);
+    const scaleY = clampedZoom * (IDEAL_CARD_HEIGHT / viewBox.height);
     const scale = Math.min(scaleX, scaleY);
     card.style.setProperty("--card-scale", scale);
     card.style.setProperty("--card-scale-x", scaleX);
