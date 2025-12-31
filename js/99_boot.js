@@ -380,19 +380,8 @@
       if (!toggles.length) return;
       toggles.forEach((toggle) => {
         const target = toggle.getAttribute("data-panel-toggle");
-        const cardId = root.dataset.cardId || "";
-        const panelScope = document.querySelector(".card-adjacent") || document;
-        const panels = panelScope.querySelectorAll(`[data-panel="${target}"]`);
-        let panel = null;
-        if (cardId){
-          panel = Array.from(panels).find((candidate) => candidate.dataset.cardId === cardId);
-          if (!panel){
-            panel = Array.from(panels).find((candidate) => !candidate.dataset.cardId);
-            if (panel) panel.dataset.cardId = cardId;
-          }
-        } else {
-          panel = panels[0];
-        }
+        const panelScope = root.querySelector(".card-adjacent") || root;
+        const panel = panelScope.querySelector(`[data-panel="${target}"]`);
         if (!panel) return;
         toggle.addEventListener("click", () => {
           const hidden = panel.classList.toggle("is-hidden");
