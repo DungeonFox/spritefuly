@@ -9,6 +9,8 @@
   const MAX_CARD_ZOOM = 1.1;
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
+  const cardSvgObservers = new WeakMap();
+  const cardLayoutStates = new WeakMap();
   const rootStyle = document.documentElement.style;
 
   function updateControlsPosition(card){
@@ -64,6 +66,7 @@
     if (!card) return;
     const svg = card.querySelector(".card-layout");
     if (!svg) return;
+    const layoutState = cardLayoutStates.get(card);
     const viewBox = getViewBoxDimensions(svg);
     if (!viewBox || !viewBox.width || !viewBox.height) return;
     const layoutBounds = getLayoutBounds(svg, viewBox);
@@ -90,8 +93,14 @@
     card.style.setProperty("--card-ideal-w", `${idealWidth}px`);
     card.style.setProperty("--card-ideal-h", `${idealHeight}px`);
     card.style.setProperty("--card-zoom", clampedZoom);
-    const scaleX = clampedZoom * (idealWidth / viewBox.width);
-    const scaleY = clampedZoom * (idealHeight / viewBox.height);
+    const measuredWidth = layoutState?.svgRect?.width;
+    const measuredHeight = layoutState?.svgRect?.height;
+    const scaleX = Number.isFinite(measuredWidth) && measuredWidth > 0
+      ? measuredWidth / viewBox.width
+      : clampedZoom * (idealWidth / viewBox.width);
+    const scaleY = Number.isFinite(measuredHeight) && measuredHeight > 0
+      ? measuredHeight / viewBox.height
+      : clampedZoom * (idealHeight / viewBox.height);
     const scale = Math.min(scaleX, scaleY);
     card.style.setProperty("--card-scale", scale);
     card.style.setProperty("--card-scale-x", scaleX);
@@ -106,14 +115,15 @@
     layoutTarget.style.setProperty("--layout-y", `${layoutY}px`);
     layoutTarget.style.setProperty("--layout-w", `${layoutW}px`);
     layoutTarget.style.setProperty("--layout-h", `${layoutH}px`);
-    const regions = svg.querySelectorAll("[data-region]");
-    regions.forEach((region) => {
+    const regions = {};
+    svg.querySelectorAll("[data-region]").forEach((region) => {
       const name = region.dataset.region;
       if (!name) return;
       const x = Number(region.getAttribute("x")) || 0;
       const y = Number(region.getAttribute("y")) || 0;
       const w = Number(region.getAttribute("width")) || 0;
       const h = Number(region.getAttribute("height")) || 0;
+      regions[name] = {x, y, w, h};
       layoutTarget.style.setProperty(`--${name}-x`, `${x * scaleX}px`);
       layoutTarget.style.setProperty(`--${name}-y`, `${y * scaleY}px`);
       layoutTarget.style.setProperty(`--${name}-w`, `${w * scaleX}px`);
@@ -143,17 +153,52 @@
     layoutTarget.style.setProperty("--header-pad-y", `${10 * baseScale}px`);
     layoutTarget.style.setProperty("--image-pad", `${10 * baseScale}px`);
     layoutTarget.style.setProperty("--image-gap", `${6 * baseScale}px`);
+    const content = card.querySelector(".tcg-card__content");
+    if (content){
+      const headerH = regions.header ? regions.header.h * scaleY : 0;
+      const imageH = regions.image ? regions.image.h * scaleY : 0;
+      const panelsH = regions.panels ? regions.panels.h * scaleY : 0;
+      const footerH = regions.footer ? regions.footer.h * scaleY : 0;
+      const sectionGap = regions["section-gap"] ? regions["section-gap"].h * scaleY : 0;
+      const gridRows = [
+        Math.max(headerH, 32 * baseScale),
+        sectionGap || 16 * baseScale,
+        Math.max(imageH, 120 * baseScale),
+        sectionGap || 16 * baseScale,
+        Math.max(panelsH, 140 * baseScale),
+        sectionGap || 16 * baseScale,
+        Math.max(footerH, 28 * baseScale)
+      ];
+      content.style.gridTemplateRows = gridRows.map((value) => `${value}px`).join(" ");
+      content.style.gridTemplateColumns = `${layoutW}px`;
+    }
     updateControlsPosition(card);
   }
 
   function initCardLayout(root){
     const card = root.querySelector(".tcg-card");
     if (!card) return;
+    const svg = card.querySelector(".card-layout");
+    if (svg && !cardLayoutStates.has(card)){
+      cardLayoutStates.set(card, {svgRect: null});
+    }
     updateCardLayout(card);
     if (!cardLayoutObservers.has(card)){
       const observer = new ResizeObserver(() => updateCardLayout(card));
       observer.observe(card);
       cardLayoutObservers.set(card, observer);
+    }
+    if (svg && !cardSvgObservers.has(svg)){
+      const observer = new ResizeObserver(() => {
+        const rect = svg.getBoundingClientRect();
+        const state = cardLayoutStates.get(card);
+        if (state){
+          state.svgRect = {width: rect.width, height: rect.height};
+        }
+        updateCardLayout(card);
+      });
+      observer.observe(svg);
+      cardSvgObservers.set(svg, observer);
     }
   }
 
