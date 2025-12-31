@@ -10,18 +10,44 @@
   const cardRoots = Array.from(document.querySelectorAll(".card-shell"));
   const cardLayoutObservers = new WeakMap();
   const rootStyle = document.documentElement.style;
+  const cardControlObservers = new WeakMap();
+
+  function getScrollContainer(element){
+    let node = element ? element.parentElement : null;
+    while (node && node !== document.body && node !== document.documentElement){
+      const style = window.getComputedStyle(node);
+      const overflow = `${style.overflowY} ${style.overflowX}`;
+      if (/(auto|scroll|overlay)/.test(overflow)){
+        return node;
+      }
+      node = node.parentElement;
+    }
+    return window;
+  }
 
   function updateControlsPosition(card){
     if (!card) return;
     const controls = card.querySelector(".card-header__controls");
     if (!controls) return;
+    const container = resolveCardContainer(card);
+    const scrollContainer = getScrollContainer(card);
+    const useViewport = scrollContainer === window;
+    if (container){
+      container.dataset.controlsPosition = useViewport ? "viewport" : "container";
+    }
     const cardRect = card.getBoundingClientRect();
     const rect = controls.getBoundingClientRect();
-    rootStyle.setProperty("--card-right", `${cardRect.right}px`);
-    rootStyle.setProperty("--card-top", `${cardRect.top}px`);
-    rootStyle.setProperty("--controls-right", `${rect.right}px`);
-    rootStyle.setProperty("--controls-top", `${rect.top}px`);
-    rootStyle.setProperty("--controls-height", `${rect.height}px`);
+    const containerRect = container && !useViewport ? container.getBoundingClientRect() : {left: 0, top: 0};
+    const containerScrollLeft = container && !useViewport ? container.scrollLeft : 0;
+    const containerScrollTop = container && !useViewport ? container.scrollTop : 0;
+    const offsetX = useViewport ? 0 : containerRect.left - containerScrollLeft;
+    const offsetY = useViewport ? 0 : containerRect.top - containerScrollTop;
+    const styleTarget = container ? container.style : rootStyle;
+    styleTarget.setProperty("--card-right", `${cardRect.right - offsetX}px`);
+    styleTarget.setProperty("--card-top", `${cardRect.top - offsetY}px`);
+    styleTarget.setProperty("--controls-right", `${rect.right - offsetX}px`);
+    styleTarget.setProperty("--controls-top", `${rect.top - offsetY}px`);
+    styleTarget.setProperty("--controls-height", `${rect.height}px`);
   }
 
   function getViewBoxDimensions(svg){
@@ -173,10 +199,29 @@
     updateControlsPosition(card);
   }
 
+  function initControlsPositioning(card){
+    if (!card || cardControlObservers.has(card)) return;
+    const handler = () => updateControlsPosition(card);
+    window.addEventListener("scroll", handler, {passive: true});
+    const scrollContainer = getScrollContainer(card);
+    if (scrollContainer && scrollContainer !== window){
+      scrollContainer.addEventListener("scroll", handler, {passive: true});
+    }
+    const container = resolveCardContainer(card);
+    if (container){
+      const observer = new ResizeObserver(handler);
+      observer.observe(container);
+      cardControlObservers.set(card, {handler, scrollContainer, observer});
+    } else {
+      cardControlObservers.set(card, {handler, scrollContainer, observer: null});
+    }
+  }
+
   function initCardLayout(root){
     const card = root.querySelector(".tcg-card");
     if (!card) return;
     updateCardLayout(card);
+    initControlsPositioning(card);
     if (!cardLayoutObservers.has(card)){
       const observer = new ResizeObserver(() => updateCardLayout(card));
       const container = resolveCardContainer(card);

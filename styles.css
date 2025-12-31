@@ -45,6 +45,7 @@
     justify-content:center;
     align-items:flex-start;
     padding:18px;
+    position:relative;
   }
   .card-shell{
     width:min(1800px, 100%);
@@ -185,7 +186,7 @@
     box-shadow:0 0 0 1px rgba(255, 232, 168, 0.45);
   }
   .card-adjacent{
-    position:fixed;
+    position:absolute;
     left:calc(var(--card-right) + 8.4px);
     top:calc(var(--card-top) - 8.4px);
     padding:8.4px;
@@ -194,6 +195,9 @@
     gap:10px;
     flex:0 0 320px;
     max-width:100%;
+  }
+  .card-container[data-controls-position="viewport"] .card-adjacent{
+    position:fixed;
   }
   .side-panel{
     width:100%;
