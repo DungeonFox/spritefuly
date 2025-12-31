@@ -84,6 +84,9 @@
         card.style.setProperty("--panels-h", `${h * scaleY}px`);
       }
       if (name === "footer"){
+        card.style.setProperty("--footer-x", `${x * scaleX}px`);
+        card.style.setProperty("--footer-y", `${y * scaleY}px`);
+        card.style.setProperty("--footer-w", `${w * scaleX}px`);
         card.style.setProperty("--footer-h", `${h * scaleY}px`);
       }
     });
