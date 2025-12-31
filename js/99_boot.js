@@ -77,8 +77,8 @@
     const idealHeight = baseHeight * IDEAL_CARD_SCALE;
     const container = resolveCardContainer(card);
     const rect = container.getBoundingClientRect();
-    const viewportWidth = rect.width || window.innerWidth || idealWidth;
-    const viewportHeight = rect.height || window.innerHeight || idealHeight;
+    const viewportWidth = rect.width || idealWidth;
+    const viewportHeight = rect.height || idealHeight;
     const viewportScale = Math.min(
       viewportWidth / idealWidth,
       viewportHeight / idealHeight
@@ -156,7 +156,8 @@
     updateCardLayout(card);
     if (!cardLayoutObservers.has(card)){
       const observer = new ResizeObserver(() => updateCardLayout(card));
-      observer.observe(resolveCardContainer(card));
+      const container = resolveCardContainer(card);
+      observer.observe(container);
       cardLayoutObservers.set(card, observer);
     }
   }
