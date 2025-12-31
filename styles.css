@@ -3,6 +3,8 @@
     --accent:#5dd6c1; --warn:#ffcc66; --bad:#ff6b6b; --good:#6bff95; --line:#233040;
     --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    --card-pool-scale: 0.8;
+    --card-focus-scale: 1;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
