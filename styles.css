@@ -84,8 +84,8 @@
   }
   .tcg-card__content{
     position:relative;
-    width:100%;
-    height:var(--content-h, 100%);
+    width:var(--layout-w, 100%);
+    height:var(--layout-h, 100%);
     display:grid;
     grid-template-rows:
       var(--header-h)
