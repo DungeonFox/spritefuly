@@ -66,6 +66,7 @@
     if (!svg) return;
     const viewBox = getViewBoxDimensions(svg);
     if (!viewBox || !viewBox.width || !viewBox.height) return;
+    const layoutBounds = getLayoutBounds(svg, viewBox);
     const baseWidth = viewBox.width || IDEAL_CARD_WIDTH;
     const baseHeight = viewBox.height || IDEAL_CARD_HEIGHT;
     const idealWidth = baseWidth * IDEAL_CARD_SCALE;
@@ -97,9 +98,8 @@
     card.style.setProperty("--card-scale-y", scaleY);
     const content = card.querySelector(".tcg-card__content");
     const layoutTarget = content || card;
-    const layoutBounds = getLayoutBounds(svg, viewBox);
-    const contentOffsetX = layoutBounds ? -layoutBounds.x * scaleX : 0;
-    const contentOffsetY = layoutBounds ? -layoutBounds.y * scaleY : 0;
+    const insetX = layoutBounds ? layoutBounds.x * scaleX : 0;
+    const insetY = layoutBounds ? layoutBounds.y * scaleY : 0;
     const regions = svg.querySelectorAll("[data-region]");
     regions.forEach((region) => {
       const name = region.dataset.region;
@@ -131,8 +131,8 @@
         layoutTarget.style.setProperty("--footer-h", `${h * scaleY}px`);
       }
     });
-    layoutTarget.style.setProperty("--card-content-offset-x", `${contentOffsetX}px`);
-    layoutTarget.style.setProperty("--card-content-offset-y", `${contentOffsetY}px`);
+    layoutTarget.style.setProperty("--card-content-offset-x", `${insetX}px`);
+    layoutTarget.style.setProperty("--card-content-offset-y", `${insetY}px`);
     const baseScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
     layoutTarget.style.setProperty("--card-padding", `${18 * baseScale}px`);
     layoutTarget.style.setProperty("--header-pad-x", `${14 * baseScale}px`);
