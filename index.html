@@ -106,6 +106,10 @@ END README
   <span class="pill">single‑file • offline • no deps</span>
   <span id="statusPill" class="pill">registry: 0 nodes</span>
   <button class="pill" type="button" data-role="btn-new-card">New Card</button>
+  <div class="row">
+    <label for="packageSelect">Package</label>
+    <select id="packageSelect" data-role="package-select"></select>
+  </div>
   <div class="spacer"></div>
 </header>
 
@@ -383,6 +387,7 @@ END README
 </div>
   <template id="card-template"></template>
   <script defer src="js/01_utilities.js"></script>
+  <script defer src="js/01_package_state.js"></script>
   <script defer src="js/02_registry.js"></script>
   <script defer src="js/03_graph_helpers.js"></script>
   <script defer src="js/04_reid.js"></script>

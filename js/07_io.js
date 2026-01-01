@@ -1,6 +1,25 @@
   // ---------------------------
   // IO: Load / Save
   // ---------------------------
+  function applyPackageToRegistry(manifest, cardRoot){
+    const root = resolveCardRoot(cardRoot);
+    if (!manifest || typeof manifest !== "object"){
+      log("Package manifest missing or invalid.", "warn", root);
+      return false;
+    }
+    registry.nodes = new Map();
+    registry.roots = { template: null, recipe: null, assets: [], tasks: [] };
+    clearCaches();
+    mergeManifest(manifest);
+    if (manifest.roots?.template) registry.roots.template = manifest.roots.template;
+    if (manifest.roots?.recipe) registry.roots.recipe = manifest.roots.recipe;
+    if (Array.isArray(manifest.roots?.assets)) registry.roots.assets = manifest.roots.assets.slice();
+    if (Array.isArray(manifest.roots?.tasks)) registry.roots.tasks = manifest.roots.tasks.slice();
+    clearCaches();
+    updateStatus(root);
+    return true;
+  }
+
   async function readFileText(file){
     return await file.text();
   }
