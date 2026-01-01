@@ -2,6 +2,10 @@
   // Boot
   // ---------------------------
   ensureDefaults();
+  const packageSelect = document.querySelector('[data-role="package-select"]');
+  if (packageSelect && typeof initPackageSelect === "function"){
+    initPackageSelect(packageSelect);
+  }
   const cardTemplate = document.getElementById("card-template");
   if (cardTemplate && cardTemplate.content && !cardTemplate.content.children.length){
     const seedCard = document.querySelector(".card-shell");
@@ -461,7 +465,17 @@
       const cardId = createUniqueCardId();
       updateCardIdentity(root, cardId);
       container.appendChild(fragment);
+      const selectedManifest = (typeof getSelectedPackageManifest === "function")
+        ? getSelectedPackageManifest()
+        : null;
+      if (selectedManifest && typeof applyPackageToRegistry === "function"){
+        applyPackageToRegistry(selectedManifest, root);
+      } else {
+        ensureDefaults();
+      }
       initCard(root);
+      refreshAllUI(root);
+      renderOnce(root);
       updateAllCardLayouts();
     });
   }
